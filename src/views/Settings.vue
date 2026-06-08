@@ -10,7 +10,8 @@
                 <input
                   class="form-control"
                   type="text"
-                  v-model="currentUser.image"
+                  name="image"
+                  v-model="form.image"
                   placeholder="URL of profile picture"
                 />
               </fieldset>
@@ -18,7 +19,8 @@
                 <input
                   class="form-control form-control-lg"
                   type="text"
-                  v-model="currentUser.username"
+                  name="username"
+                  v-model="form.username"
                   placeholder="Your username"
                 />
               </fieldset>
@@ -26,7 +28,8 @@
                 <textarea
                   class="form-control form-control-lg"
                   rows="8"
-                  v-model="currentUser.bio"
+                  name="bio"
+                  v-model="form.bio"
                   placeholder="Short bio about you"
                 ></textarea>
               </fieldset>
@@ -34,7 +37,8 @@
                 <input
                   class="form-control form-control-lg"
                   type="text"
-                  v-model="currentUser.email"
+                  name="email"
+                  v-model="form.email"
                   placeholder="Email"
                 />
               </fieldset>
@@ -42,16 +46,16 @@
                 <input
                   class="form-control form-control-lg"
                   type="password"
-                  v-model="currentUser.password"
+                  name="password"
+                  v-model="form.password"
                   placeholder="Password"
                 />
               </fieldset>
-              <button class="btn btn-lg btn-primary pull-xs-right">
+              <button type="submit" class="btn btn-lg btn-primary pull-xs-right">
                 Update Settings
               </button>
             </fieldset>
           </form>
-          <!-- Line break for logout button -->
           <hr />
           <button @click="logout" class="btn btn-outline-danger">
             Or click here to logout.
@@ -68,14 +72,49 @@ import { LOGOUT, UPDATE_USER } from "@/store/actions.type";
 
 export default {
   name: "RwvSettings",
+  data() {
+    return {
+      form: {
+        username: "",
+        email: "",
+        bio: "",
+        image: "",
+        password: ""
+      }
+    };
+  },
   computed: {
     ...mapGetters(["currentUser"])
   },
+  mounted() {
+    this.syncFromUser();
+  },
+  watch: {
+    "currentUser.username"() {
+      this.syncFromUser();
+    }
+  },
   methods: {
+    syncFromUser() {
+      const u = this.currentUser || {};
+      this.form.username = u.username || "";
+      this.form.email = u.email || "";
+      this.form.bio = u.bio || "";
+      this.form.image = u.image || "";
+    },
     updateSettings() {
-      this.$store.dispatch(UPDATE_USER, this.currentUser).then(() => {
-        // #todo, nice toast and no redirect
-        this.$router.push({ name: "home" });
+      const payload = {
+        username: this.form.username,
+        email: this.form.email,
+        bio: this.form.bio,
+        image: this.form.image
+      };
+      if (this.form.password) payload.password = this.form.password;
+      this.$store.dispatch(UPDATE_USER, payload).then(() => {
+        this.$router.push({
+          name: "profile",
+          params: { username: this.form.username }
+        });
       });
     },
     logout() {

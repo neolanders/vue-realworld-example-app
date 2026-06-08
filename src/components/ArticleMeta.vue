@@ -3,7 +3,7 @@
     <router-link
       :to="{ name: 'profile', params: { username: article.author.username } }"
     >
-      <img :src="article.author.image" />
+      <img :src="authorImage" />
     </router-link>
     <div class="info">
       <router-link
@@ -56,7 +56,12 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(["currentUser", "isAuthenticated"])
+    ...mapGetters(["currentUser", "isAuthenticated"]),
+    authorImage() {
+      return this.article.author && this.article.author.image
+        ? this.article.author.image
+        : "/default-avatar.svg";
+    }
   },
   methods: {
     isCurrentUser() {

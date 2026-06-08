@@ -17,6 +17,7 @@
               <input
                 class="form-control form-control-lg"
                 type="text"
+                name="email"
                 v-model="email"
                 placeholder="Email"
               />
@@ -25,11 +26,12 @@
               <input
                 class="form-control form-control-lg"
                 type="password"
+                name="password"
                 v-model="password"
                 placeholder="Password"
               />
             </fieldset>
-            <button class="btn btn-lg btn-primary pull-xs-right">
+            <button type="submit" class="btn btn-lg btn-primary pull-xs-right">
               Sign in
             </button>
           </form>

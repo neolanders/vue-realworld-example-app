@@ -8,9 +8,13 @@
       <RwvArticlePreview
         v-for="(article, index) in articles"
         :article="article"
-        :key="article.title + index"
+        :key="article.slug + '-' + index"
       />
-      <VPagination :pages="pages" :currentPage.sync="currentPage" />
+      <VPagination
+        :pages="pages"
+        :current-page="page"
+        @update:currentPage="emitPage"
+      />
     </div>
   </div>
 </template>
@@ -49,33 +53,27 @@ export default {
       type: Number,
       required: false,
       default: 10
+    },
+    currentPage: {
+      type: Number,
+      required: false,
+      default: 1
     }
   },
-  data() {
-    return {
-      currentPage: 1
-    };
-  },
   computed: {
+    page() {
+      return this.currentPage > 0 ? this.currentPage : 1;
+    },
     listConfig() {
       const { type } = this;
       const filters = {
-        offset: (this.currentPage - 1) * this.itemsPerPage,
+        offset: (this.page - 1) * this.itemsPerPage,
         limit: this.itemsPerPage
       };
-      if (this.author) {
-        filters.author = this.author;
-      }
-      if (this.tag) {
-        filters.tag = this.tag;
-      }
-      if (this.favorited) {
-        filters.favorited = this.favorited;
-      }
-      return {
-        type,
-        filters
-      };
+      if (this.author) filters.author = this.author;
+      if (this.tag) filters.tag = this.tag;
+      if (this.favorited) filters.favorited = this.favorited;
+      return { type, filters };
     },
     pages() {
       if (this.isLoading || this.articlesCount <= this.itemsPerPage) {
@@ -88,24 +86,19 @@ export default {
     ...mapGetters(["articlesCount", "isLoading", "articles"])
   },
   watch: {
-    currentPage(newValue) {
-      this.listConfig.filters.offset = (newValue - 1) * this.itemsPerPage;
+    page() {
       this.fetchArticles();
     },
     type() {
-      this.resetPagination();
       this.fetchArticles();
     },
     author() {
-      this.resetPagination();
       this.fetchArticles();
     },
     tag() {
-      this.resetPagination();
       this.fetchArticles();
     },
     favorited() {
-      this.resetPagination();
       this.fetchArticles();
     }
   },
@@ -116,9 +109,8 @@ export default {
     fetchArticles() {
       this.$store.dispatch(FETCH_ARTICLES, this.listConfig);
     },
-    resetPagination() {
-      this.listConfig.offset = 0;
-      this.currentPage = 1;
+    emitPage(p) {
+      this.$emit("update:currentPage", p);
     }
   }
 };

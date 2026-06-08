@@ -51,7 +51,7 @@
           <router-link
             class="nav-link"
             active-class="active"
-            :to="{ name: 'article-edit' }"
+            :to="{ name: 'editor-new' }"
           >
             <i class="ion-compose"></i>&nbsp;New Article
           </router-link>

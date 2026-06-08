@@ -10,6 +10,7 @@
                 <input
                   type="text"
                   class="form-control form-control-lg"
+                  name="title"
                   v-model="article.title"
                   placeholder="Article Title"
                 />
@@ -18,6 +19,7 @@
                 <input
                   type="text"
                   class="form-control"
+                  name="description"
                   v-model="article.description"
                   placeholder="What's this article about?"
                 />
@@ -26,6 +28,7 @@
                 <textarea
                   class="form-control"
                   rows="8"
+                  name="body"
                   v-model="article.body"
                   placeholder="Write your article (in markdown)"
                 >

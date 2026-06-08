@@ -4,7 +4,7 @@
       <div class="container">
         <div class="row">
           <div class="col-xs-12 col-md-10 offset-md-1">
-            <img :src="profile.image" class="user-img" />
+            <img :src="avatarUrl" class="user-img" />
             <h4>{{ profile.username }}</h4>
             <p>{{ profile.bio }}</p>
             <div v-if="isCurrentUser()">
@@ -21,16 +21,14 @@
                 v-if="profile.following"
                 @click.prevent="unfollow()"
               >
-                <i class="ion-plus-round"></i> &nbsp;Unfollow
-                {{ profile.username }}
+                Unfollow {{ profile.username }}
               </button>
               <button
                 class="btn btn-sm btn-outline-secondary action-btn"
                 v-if="!profile.following"
                 @click.prevent="follow()"
               >
-                <i class="ion-plus-round"></i> &nbsp;Follow
-                {{ profile.username }}
+                Follow {{ profile.username }}
               </button>
             </div>
           </div>
@@ -48,7 +46,7 @@
                   class="nav-link"
                   active-class="active"
                   exact
-                  :to="{ name: 'profile' }"
+                  :to="{ name: 'profile', params: { username } }"
                 >
                   My Articles
                 </router-link>
@@ -58,14 +56,27 @@
                   class="nav-link"
                   active-class="active"
                   exact
-                  :to="{ name: 'profile-favorites' }"
+                  :to="{ name: 'profile-favorites', params: { username } }"
                 >
                   Favorited Articles
                 </router-link>
               </li>
             </ul>
           </div>
-          <router-view></router-view>
+          <RwvArticleList
+            v-if="!showFavorited"
+            :author="username"
+            :current-page="currentPage"
+            :items-per-page="5"
+            @update:currentPage="onPageChange"
+          />
+          <RwvArticleList
+            v-else
+            :favorited="username"
+            :current-page="currentPage"
+            :items-per-page="5"
+            @update:currentPage="onPageChange"
+          />
         </div>
       </div>
     </div>
@@ -74,19 +85,38 @@
 
 <script>
 import { mapGetters } from "vuex";
+import RwvArticleList from "@/components/ArticleList";
 import {
   FETCH_PROFILE,
   FETCH_PROFILE_FOLLOW,
   FETCH_PROFILE_UNFOLLOW
 } from "@/store/actions.type";
 
+const DEFAULT_AVATAR = "/default-avatar.svg";
+
 export default {
   name: "RwvProfile",
+  components: { RwvArticleList },
   mounted() {
     this.$store.dispatch(FETCH_PROFILE, this.$route.params);
   },
   computed: {
-    ...mapGetters(["currentUser", "profile", "isAuthenticated"])
+    ...mapGetters(["currentUser", "profile", "isAuthenticated"]),
+    username() {
+      return this.$route.params.username;
+    },
+    showFavorited() {
+      return this.$route.name === "profile-favorites";
+    },
+    currentPage() {
+      const p = parseInt(this.$route.query.page, 10);
+      return p > 0 ? p : 1;
+    },
+    avatarUrl() {
+      return this.profile && this.profile.image
+        ? this.profile.image
+        : DEFAULT_AVATAR;
+    }
   },
   methods: {
     isCurrentUser() {
@@ -101,6 +131,12 @@ export default {
     },
     unfollow() {
       this.$store.dispatch(FETCH_PROFILE_UNFOLLOW, this.$route.params);
+    },
+    onPageChange(page) {
+      const query = { ...this.$route.query };
+      if (page > 1) query.page = String(page);
+      else delete query.page;
+      this.$router.push({ path: this.$route.path, query });
     }
   },
   watch: {

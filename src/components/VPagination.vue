@@ -1,14 +1,19 @@
 <template>
-  <nav>
+  <nav v-if="pages.length > 1">
     <ul class="pagination">
       <li
         v-for="page in pages"
         :data-test="`page-link-${page}`"
         :key="page"
         :class="paginationClass(page)"
-        @click.prevent="changePage(page)"
       >
-        <a class="page-link" href v-text="page" />
+        <button
+          type="button"
+          class="page-link"
+          @click.prevent="changePage(page)"
+        >
+          {{ page }}
+        </button>
       </li>
     </ul>
   </nav>
