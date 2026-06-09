@@ -1,3 +1,3 @@
 [submodule "realworld-apps/realworld"]
-	path = realworld-apps/realworld
+	path = realworld
 	url = https://github.com/gothinkster/realworld
