@@ -5,7 +5,7 @@
     </div>
     <div class="card-footer">
       <a href="" class="comment-author">
-        <img :src="comment.author.image" class="comment-author-img" />
+        <img :src="authorImage" class="comment-author-img" />
       </a>
       <router-link
         class="comment-author"
@@ -37,6 +37,11 @@ export default {
         return this.comment.author.username === this.currentUser.username;
       }
       return false;
+    },
+    authorImage() {
+      return this.comment.author && this.comment.author.image
+        ? this.comment.author.image
+        : "/default-avatar.svg";
     },
     ...mapGetters(["currentUser"])
   },

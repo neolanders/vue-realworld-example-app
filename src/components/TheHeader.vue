@@ -76,6 +76,7 @@
               params: { username: currentUser.username }
             }"
           >
+            <img :src="userPicSrc" class="user-pic" />
             {{ currentUser.username }}
           </router-link>
         </li>
@@ -90,7 +91,12 @@ import { mapGetters } from "vuex";
 export default {
   name: "RwvHeader",
   computed: {
-    ...mapGetters(["currentUser", "isAuthenticated"])
+    ...mapGetters(["currentUser", "isAuthenticated"]),
+    userPicSrc() {
+      return this.currentUser && this.currentUser.image
+        ? this.currentUser.image
+        : "/default-avatar.svg";
+    }
   }
 };
 </script>

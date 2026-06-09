@@ -26,14 +26,19 @@ const getters = {
 
 const actions = {
   [LOGIN](context, credentials) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       ApiService.post("users/login", { user: credentials })
         .then(({ data }) => {
           context.commit(SET_AUTH, data.user);
           resolve(data);
         })
-        .catch(({ response }) => {
-          context.commit(SET_ERROR, response.data.errors);
+        .catch(error => {
+          const errs =
+            error && error.response && error.response.data && error.response.data.errors
+              ? error.response.data.errors
+              : { "network error": ["unable to reach server"] };
+          context.commit(SET_ERROR, errs);
+          reject(error);
         });
     });
   },
@@ -47,9 +52,13 @@ const actions = {
           context.commit(SET_AUTH, data.user);
           resolve(data);
         })
-        .catch(({ response }) => {
-          context.commit(SET_ERROR, response.data.errors);
-          reject(response);
+        .catch(error => {
+          const errs =
+            error && error.response && error.response.data && error.response.data.errors
+              ? error.response.data.errors
+              : { "network error": ["unable to reach server"] };
+          context.commit(SET_ERROR, errs);
+          reject(error);
         });
     });
   },
@@ -60,8 +69,12 @@ const actions = {
         .then(({ data }) => {
           context.commit(SET_AUTH, data.user);
         })
-        .catch(() => {
-          context.commit(PURGE_AUTH);
+        .catch(error => {
+          const status =
+            error && error.response && error.response.status;
+          if (status === 401 || status === 403) {
+            context.commit(PURGE_AUTH);
+          }
         });
     } else {
       context.commit(PURGE_AUTH);
@@ -80,7 +93,7 @@ const actions = {
       user.password = password;
     }
 
-    return ApiService.put("user", user).then(({ data }) => {
+    return ApiService.put("user", { user }).then(({ data }) => {
       context.commit(SET_AUTH, data.user);
       return data;
     });

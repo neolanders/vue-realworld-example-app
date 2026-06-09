@@ -77,8 +77,8 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     Promise.all([
-      store.dispatch(FETCH_ARTICLE, to.params.slug),
-      store.dispatch(FETCH_COMMENTS, to.params.slug)
+      store.dispatch(FETCH_ARTICLE, to.params.slug).catch(() => null),
+      store.dispatch(FETCH_COMMENTS, to.params.slug).catch(() => null)
     ]).then(() => {
       next();
     });
