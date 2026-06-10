@@ -22,3 +22,7 @@ yarn-error.log*
 
 # Coverage Reports
 coverage
+
+# Playwright
+playwright-report
+test-results
