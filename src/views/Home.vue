@@ -69,53 +69,56 @@
   </div>
 </template>
 
-<script>
-import { mapState, mapActions } from "pinia";
+<script setup>
+import { computed, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/store/auth";
 import { useHomeStore } from "@/store/home";
 import RwvTag from "@/components/VTag";
 import RwvArticleList from "@/components/ArticleList";
 
-export default {
-  name: "RwvHome",
-  components: { RwvTag, RwvArticleList },
-  mounted() {
-    this.fetchTags();
-  },
-  computed: {
-    ...mapState(useAuthStore, ["isAuthenticated"]),
-    ...mapState(useHomeStore, ["tags", "isLoading", "articles"]),
-    tag() {
-      return this.$route.params.tag;
-    },
-    feedMode() {
-      if (this.tag) return "tag";
-      if (this.$route.query.feed === "following") return "following";
-      return "global";
-    },
-    articleType() {
-      return this.feedMode === "following" ? "feed" : "all";
-    },
-    currentPage() {
-      const p = parseInt(this.$route.query.page, 10);
-      return p > 0 ? p : 1;
-    }
-  },
-  methods: {
-    ...mapActions(useHomeStore, ["fetchTags"]),
-    goTo(query) {
-      const target = { path: "/", query };
-      this.$router.push(target);
-    },
-    onPageChange(page) {
-      const query = { ...this.$route.query };
-      if (page > 1) {
-        query.page = String(page);
-      } else {
-        delete query.page;
-      }
-      this.$router.push({ path: this.$route.path, query });
-    }
+defineOptions({ name: "RwvHome" });
+
+const route = useRoute();
+const router = useRouter();
+const homeStore = useHomeStore();
+const { isAuthenticated } = storeToRefs(useAuthStore());
+const { tags, isLoading, articles } = storeToRefs(homeStore);
+
+onMounted(() => {
+  // Missing tags only leave the sidebar empty; never crash the home page.
+  homeStore.fetchTags().catch(() => {});
+});
+
+const tag = computed(() => route.params.tag);
+
+const feedMode = computed(() => {
+  if (tag.value) return "tag";
+  if (route.query.feed === "following") return "following";
+  return "global";
+});
+
+const articleType = computed(() =>
+  feedMode.value === "following" ? "feed" : "all"
+);
+
+const currentPage = computed(() => {
+  const p = parseInt(route.query.page, 10);
+  return p > 0 ? p : 1;
+});
+
+const goTo = (query) => {
+  router.push({ path: "/", query });
+};
+
+const onPageChange = (page) => {
+  const query = { ...route.query };
+  if (page > 1) {
+    query.page = String(page);
+  } else {
+    delete query.page;
   }
+  router.push({ path: route.path, query });
 };
 </script>

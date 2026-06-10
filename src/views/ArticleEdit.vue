@@ -69,20 +69,12 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "pinia";
 import pinia from "@/store";
 import { useArticleStore } from "@/store/article";
-import RwvListErrors from "@/components/ListErrors";
-import { extractErrors } from "@/common/errors";
 
+// `beforeRouteEnter` runs before the component instance is created, so it
+// has no composition-API equivalent and lives in this options block.
 export default {
-  name: "RwvArticleEdit",
-  components: { RwvListErrors },
-  beforeRouteUpdate() {
-    // Reset state if user goes from /editor/:id to /editor
-    // The component is not recreated so we use the hook to reset the state.
-    useArticleStore(pinia).$reset();
-  },
   async beforeRouteEnter(to) {
     // If we arrive directly at this url, we need to fetch the article
     const articleStore = useArticleStore(pinia);
@@ -90,50 +82,60 @@ export default {
     if (to.params.slug !== undefined) {
       await articleStore.fetchArticle(to.params.slug);
     }
-  },
-  beforeRouteLeave() {
-    useArticleStore(pinia).$reset();
-  },
-  data() {
-    return {
-      tagInput: null,
-      inProgress: false,
-      errors: {}
-    };
-  },
-  computed: {
-    ...mapState(useArticleStore, ["article"])
-  },
-  methods: {
-    ...mapActions(useArticleStore, {
-      publishArticle: "publishArticle",
-      editArticle: "editArticle",
-      addTagToArticle: "addTag",
-      removeTagFromArticle: "removeTag"
-    }),
-    onPublish(slug) {
-      this.inProgress = true;
-      const result = slug ? this.editArticle() : this.publishArticle();
-      result
-        .then(({ data }) => {
-          this.inProgress = false;
-          this.$router.push({
-            name: "article",
-            params: { slug: data.article.slug }
-          });
-        })
-        .catch((error) => {
-          this.inProgress = false;
-          this.errors = extractErrors(error);
-        });
-    },
-    removeTag(tag) {
-      this.removeTagFromArticle(tag);
-    },
-    addTag(tag) {
-      this.addTagToArticle(tag);
-      this.tagInput = null;
-    }
   }
+};
+</script>
+
+<script setup>
+import { ref } from "vue";
+import { storeToRefs } from "pinia";
+import { useRouter, onBeforeRouteUpdate, onBeforeRouteLeave } from "vue-router";
+import RwvListErrors from "@/components/ListErrors";
+import { extractErrors } from "@/common/errors";
+
+const router = useRouter();
+const articleStore = useArticleStore();
+const { article } = storeToRefs(articleStore);
+
+const tagInput = ref(null);
+const inProgress = ref(false);
+const errors = ref({});
+
+// Reset state if user goes from /editor/:id to /editor
+// The component is not recreated so we use the hook to reset the state.
+onBeforeRouteUpdate(() => {
+  articleStore.$reset();
+});
+
+onBeforeRouteLeave(() => {
+  articleStore.$reset();
+});
+
+const onPublish = (slug) => {
+  inProgress.value = true;
+  const result = slug
+    ? articleStore.editArticle()
+    : articleStore.publishArticle();
+  result
+    .then(({ data }) => {
+      inProgress.value = false;
+      router.push({
+        name: "article",
+        params: { slug: data.article.slug }
+      });
+    })
+    .catch((error) => {
+      inProgress.value = false;
+      errors.value = extractErrors(error);
+    });
+};
+
+const removeTag = (tag) => {
+  articleStore.removeTag(tag);
+};
+
+const addTag = (tag) => {
+  articleStore.addTag(tag);
+  tagInput.value = null;
 };
 </script>

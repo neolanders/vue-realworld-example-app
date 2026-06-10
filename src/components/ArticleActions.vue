@@ -28,82 +28,78 @@
   </span>
 </template>
 
-<script>
-import { mapState, mapActions } from "pinia";
+<script setup>
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "@/store/auth";
 import { useArticleStore } from "@/store/article";
 import { useProfileStore } from "@/store/profile";
 
-export default {
-  name: "RwvArticleActions",
-  props: {
-    article: { type: Object, required: true },
-    canModify: { type: Boolean, required: true }
-  },
-  computed: {
-    ...mapState(useProfileStore, ["profile"]),
-    ...mapState(useAuthStore, ["isAuthenticated"]),
-    editArticleLink() {
-      return { name: "article-edit", params: { slug: this.article.slug } };
-    },
-    toggleFavoriteButtonClasses() {
-      return {
-        "btn-primary": this.article.favorited,
-        "btn-outline-primary": !this.article.favorited
-      };
-    },
-    followUserLabel() {
-      return `${this.profile.following ? "Unfollow" : "Follow"} ${
-        this.article.author.username
-      }`;
-    },
-    favoriteArticleLabel() {
-      return this.article.favorited ? "Unfavorite Article" : "Favorite Article";
-    },
-    favoriteCounter() {
-      return `(${this.article.favoritesCount})`;
-    }
-  },
-  methods: {
-    ...mapActions(useArticleStore, {
-      addFavorite: "addFavorite",
-      removeFavorite: "removeFavorite",
-      destroyArticle: "deleteArticle"
-    }),
-    ...mapActions(useProfileStore, {
-      followProfile: "follow",
-      unfollowProfile: "unfollow"
-    }),
-    toggleFavorite() {
-      if (!this.isAuthenticated) {
-        this.$router.push({ name: "login" });
-        return;
-      }
-      if (this.article.favorited) {
-        this.removeFavorite(this.article.slug);
-      } else {
-        this.addFavorite(this.article.slug);
-      }
-    },
-    toggleFollow() {
-      if (!this.isAuthenticated) {
-        this.$router.push({ name: "login" });
-        return;
-      }
-      if (this.article.following) {
-        this.unfollowProfile({ username: this.profile.username });
-      } else {
-        this.followProfile({ username: this.profile.username });
-      }
-    },
-    async deleteArticle() {
-      try {
-        await this.destroyArticle(this.article.slug);
-        this.$router.push("/");
-      } catch (err) {
-        console.error(err);
-      }
-    }
+const props = defineProps({
+  article: { type: Object, required: true },
+  canModify: { type: Boolean, required: true }
+});
+
+const router = useRouter();
+const articleStore = useArticleStore();
+const profileStore = useProfileStore();
+const { profile } = storeToRefs(profileStore);
+const { isAuthenticated } = storeToRefs(useAuthStore());
+
+const editArticleLink = computed(() => ({
+  name: "article-edit",
+  params: { slug: props.article.slug }
+}));
+
+const toggleFavoriteButtonClasses = computed(() => ({
+  "btn-primary": props.article.favorited,
+  "btn-outline-primary": !props.article.favorited
+}));
+
+const followUserLabel = computed(
+  () =>
+    `${profile.value.following ? "Unfollow" : "Follow"} ${
+      props.article.author.username
+    }`
+);
+
+const favoriteArticleLabel = computed(() =>
+  props.article.favorited ? "Unfavorite Article" : "Favorite Article"
+);
+
+const favoriteCounter = computed(() => `(${props.article.favoritesCount})`);
+
+const toggleFavorite = () => {
+  if (!isAuthenticated.value) {
+    router.push({ name: "login" });
+    return;
+  }
+  if (props.article.favorited) {
+    articleStore.removeFavorite(props.article.slug);
+  } else {
+    articleStore.addFavorite(props.article.slug);
+  }
+};
+
+const toggleFollow = () => {
+  if (!isAuthenticated.value) {
+    router.push({ name: "login" });
+    return;
+  }
+  if (props.article.following) {
+    profileStore.unfollow({ username: profile.value.username });
+  } else {
+    profileStore.follow({ username: profile.value.username });
+  }
+};
+
+const deleteArticle = async () => {
+  try {
+    await articleStore.deleteArticle(props.article.slug);
+    router.push("/");
+  } catch (err) {
+    console.error(err);
   }
 };
 </script>

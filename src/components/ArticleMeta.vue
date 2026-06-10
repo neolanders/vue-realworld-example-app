@@ -15,11 +15,11 @@
       <span v-else class="author"></span>
       <span class="date">{{ formatDate(article.createdAt) }}</span>
     </div>
-    <rwv-article-actions
+    <RwvArticleActions
       v-if="actions"
       :article="article"
       :canModify="isCurrentUser()"
-    ></rwv-article-actions>
+    ></RwvArticleActions>
     <button
       v-else
       class="btn btn-sm pull-xs-right"
@@ -35,63 +35,60 @@
   </div>
 </template>
 
-<script>
-import { mapState, mapActions } from "pinia";
+<script setup>
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "@/store/auth";
 import { useArticleStore } from "@/store/article";
 import { formatDate } from "@/common/format";
 import RwvArticleActions from "@/components/ArticleActions";
 
-export default {
-  name: "RwvArticleMeta",
-  components: {
-    RwvArticleActions
+const props = defineProps({
+  article: {
+    type: Object,
+    required: true
   },
-  props: {
-    article: {
-      type: Object,
-      required: true
-    },
-    actions: {
-      type: Boolean,
-      required: false,
-      default: false
-    }
-  },
-  computed: {
-    ...mapState(useAuthStore, ["currentUser", "isAuthenticated"]),
-    authorImage() {
-      return this.article.author && this.article.author.image
-        ? this.article.author.image
-        : "/default-avatar.svg";
-    },
-    authorProfileLink() {
-      const username = this.article.author && this.article.author.username;
-      // An article that failed to load has no author; render the meta without
-      // links instead of letting router-link throw on the missing param.
-      return username ? { name: "profile", params: { username } } : null;
-    }
-  },
-  methods: {
-    ...mapActions(useArticleStore, ["addFavorite", "removeFavorite"]),
-    formatDate,
-    isCurrentUser() {
-      if (this.currentUser.username && this.article.author.username) {
-        return this.currentUser.username === this.article.author.username;
-      }
-      return false;
-    },
-    toggleFavorite() {
-      if (!this.isAuthenticated) {
-        this.$router.push({ name: "login" });
-        return;
-      }
-      if (this.article.favorited) {
-        this.removeFavorite(this.article.slug);
-      } else {
-        this.addFavorite(this.article.slug);
-      }
-    }
+  actions: {
+    type: Boolean,
+    required: false,
+    default: false
+  }
+});
+
+const router = useRouter();
+const articleStore = useArticleStore();
+const { currentUser, isAuthenticated } = storeToRefs(useAuthStore());
+
+const authorImage = computed(() =>
+  props.article.author && props.article.author.image
+    ? props.article.author.image
+    : "/default-avatar.svg"
+);
+
+const authorProfileLink = computed(() => {
+  const username = props.article.author && props.article.author.username;
+  // An article that failed to load has no author; render the meta without
+  // links instead of letting router-link throw on the missing param.
+  return username ? { name: "profile", params: { username } } : null;
+});
+
+const isCurrentUser = () => {
+  if (currentUser.value.username && props.article.author.username) {
+    return currentUser.value.username === props.article.author.username;
+  }
+  return false;
+};
+
+const toggleFavorite = () => {
+  if (!isAuthenticated.value) {
+    router.push({ name: "login" });
+    return;
+  }
+  if (props.article.favorited) {
+    articleStore.removeFavorite(props.article.slug);
+  } else {
+    articleStore.addFavorite(props.article.slug);
   }
 };
 </script>

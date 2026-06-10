@@ -19,31 +19,27 @@
   </nav>
 </template>
 
-<script>
-export default {
-  name: "VPagination",
-  props: {
-    pages: {
-      type: Array,
-      required: true
-    },
-    currentPage: {
-      type: Number,
-      required: true
-    }
+<script setup>
+const props = defineProps({
+  pages: {
+    type: Array,
+    required: true
   },
-  emits: ["update:currentPage"],
-  methods: {
-    changePage(goToPage) {
-      if (goToPage === this.currentPage) return;
-      this.$emit("update:currentPage", goToPage);
-    },
-    paginationClass(page) {
-      return {
-        "page-item": true,
-        active: this.currentPage === page
-      };
-    }
+  currentPage: {
+    type: Number,
+    required: true
   }
+});
+
+const emit = defineEmits(["update:currentPage"]);
+
+const changePage = (goToPage) => {
+  if (goToPage === props.currentPage) return;
+  emit("update:currentPage", goToPage);
 };
+
+const paginationClass = (page) => ({
+  "page-item": true,
+  active: props.currentPage === page
+});
 </script>

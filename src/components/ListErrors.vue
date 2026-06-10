@@ -7,11 +7,8 @@
   </ul>
 </template>
 
-<script>
-export default {
-  name: "RwvListErrors",
-  props: {
-    errors: { type: Object, required: true }
-  }
-};
+<script setup>
+defineProps({
+  errors: { type: Object, required: true }
+});
 </script>

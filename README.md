@@ -12,7 +12,7 @@ The original Vue 2 implementation lives on as a frozen reference at [realworld-a
 
 ## Stack
 
-- [Vue 3](https://vuejs.org/) with [Pinia](https://pinia.vuejs.org/) and [Vue Router 4](https://router.vuejs.org/)
+- [Vue 3](https://vuejs.org/) (Composition API / `<script setup>`) with [Pinia](https://pinia.vuejs.org/) and [Vue Router 5](https://router.vuejs.org/)
 - [Vite](https://vitejs.dev/) (via `@vitejs/plugin-vue`) for dev server and builds
 - [Bun](https://bun.sh/) as package manager / script runner
 - [Playwright](https://playwright.dev/) running the official [RealWorld e2e test suite](https://github.com/realworld-apps/realworld), vendored as the `realworld` git submodule

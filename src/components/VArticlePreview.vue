@@ -10,28 +10,19 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from "vue";
 import RwvArticleMeta from "./ArticleMeta";
 import TagList from "./TagList";
 
-export default {
-  name: "RwvArticlePreview",
-  components: {
-    RwvArticleMeta,
-    TagList
-  },
-  props: {
-    article: { type: Object, required: true }
-  },
-  computed: {
-    articleLink() {
-      return {
-        name: "article",
-        params: {
-          slug: this.article.slug
-        }
-      };
-    }
+const props = defineProps({
+  article: { type: Object, required: true }
+});
+
+const articleLink = computed(() => ({
+  name: "article",
+  params: {
+    slug: props.article.slug
   }
-};
+}));
 </script>

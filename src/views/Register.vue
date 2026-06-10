@@ -52,43 +52,41 @@
   </div>
 </template>
 
-<script>
-import { mapState, mapActions } from "pinia";
+<script setup>
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/store/auth";
 import { formatError } from "@/common/format";
 
-export default {
-  name: "RwvRegister",
-  data() {
-    return {
-      username: "",
-      email: "",
-      password: ""
-    };
-  },
-  computed: {
-    ...mapState(useAuthStore, ["errors"]),
-    postAuthRoute() {
-      const redirect = this.$route.query.redirect;
-      // Only allow same-app paths to avoid open redirects.
-      if (typeof redirect === "string" && redirect.startsWith("/")) {
-        return redirect;
-      }
-      return { name: "home" };
-    }
-  },
-  methods: {
-    ...mapActions(useAuthStore, ["register"]),
-    formatError,
-    onSubmit() {
-      this.register({
-        email: this.email,
-        password: this.password,
-        username: this.username
-      })
-        .then(() => this.$router.push(this.postAuthRoute))
-        .catch(() => {});
-    }
+defineOptions({ name: "RwvRegister" });
+
+const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
+const { errors } = storeToRefs(authStore);
+
+const username = ref("");
+const email = ref("");
+const password = ref("");
+
+const postAuthRoute = computed(() => {
+  const redirect = route.query.redirect;
+  // Only allow same-app paths to avoid open redirects.
+  if (typeof redirect === "string" && redirect.startsWith("/")) {
+    return redirect;
   }
+  return { name: "home" };
+});
+
+const onSubmit = () => {
+  authStore
+    .register({
+      email: email.value,
+      password: password.value,
+      username: username.value
+    })
+    .then(() => router.push(postAuthRoute.value))
+    .catch(() => {});
 };
 </script>

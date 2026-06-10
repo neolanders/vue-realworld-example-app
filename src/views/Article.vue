@@ -34,13 +34,13 @@
           </RwvCommentEditor>
           <p v-else>
             <router-link
-              :to="{ name: 'login', query: { redirect: $route.fullPath } }"
+              :to="{ name: 'login', query: { redirect: route.fullPath } }"
             >
               Sign in
             </router-link>
             or
             <router-link
-              :to="{ name: 'register', query: { redirect: $route.fullPath } }"
+              :to="{ name: 'register', query: { redirect: route.fullPath } }"
             >
               sign up
             </router-link>
@@ -60,47 +60,47 @@
 </template>
 
 <script>
-import { mapState } from "pinia";
-import { marked } from "marked";
-import DOMPurify from "dompurify";
 import pinia from "@/store";
 import { useArticleStore } from "@/store/article";
-import { useAuthStore } from "@/store/auth";
-import RwvArticleMeta from "@/components/ArticleMeta";
-import RwvComment from "@/components/Comment";
-import RwvCommentEditor from "@/components/CommentEditor";
-import RwvTag from "@/components/VTag";
 
+// `beforeRouteEnter` runs before the component instance is created, so it
+// has no composition-API equivalent and lives in this options block.
 export default {
   name: "RwvArticle",
-  props: {
-    slug: {
-      type: String,
-      required: true
-    }
-  },
-  components: {
-    RwvArticleMeta,
-    RwvComment,
-    RwvCommentEditor,
-    RwvTag
-  },
   async beforeRouteEnter(to) {
     const articleStore = useArticleStore(pinia);
     await Promise.all([
       articleStore.fetchArticle(to.params.slug).catch(() => null),
       articleStore.fetchComments(to.params.slug).catch(() => null)
     ]);
-  },
-  computed: {
-    ...mapState(useArticleStore, ["article", "comments"]),
-    ...mapState(useAuthStore, ["currentUser", "isAuthenticated"])
-  },
-  methods: {
-    parseMarkdown(content) {
-      // The body comes from the API and may contain attacker-controlled HTML.
-      return DOMPurify.sanitize(marked.parse(content));
-    }
   }
+};
+</script>
+
+<script setup>
+import { storeToRefs } from "pinia";
+import { useRoute } from "vue-router";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
+import { useAuthStore } from "@/store/auth";
+import RwvArticleMeta from "@/components/ArticleMeta";
+import RwvComment from "@/components/Comment";
+import RwvCommentEditor from "@/components/CommentEditor";
+import RwvTag from "@/components/VTag";
+
+defineProps({
+  slug: {
+    type: String,
+    required: true
+  }
+});
+
+const route = useRoute();
+const { article, comments } = storeToRefs(useArticleStore());
+const { currentUser, isAuthenticated } = storeToRefs(useAuthStore());
+
+const parseMarkdown = (content) => {
+  // The body comes from the API and may contain attacker-controlled HTML.
+  return DOMPurify.sanitize(marked.parse(content));
 };
 </script>

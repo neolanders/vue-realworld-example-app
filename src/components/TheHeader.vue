@@ -82,22 +82,19 @@
   </nav>
 </template>
 
-<script>
-import { mapState } from "pinia";
+<script setup>
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/auth";
 
-export default {
-  name: "RwvHeader",
-  computed: {
-    ...mapState(useAuthStore, ["currentUser", "isAuthenticated", "authStatus"]),
-    isUnavailable() {
-      return this.authStatus === "unavailable";
-    },
-    userPicSrc() {
-      return this.currentUser && this.currentUser.image
-        ? this.currentUser.image
-        : "/default-avatar.svg";
-    }
-  }
-};
+const { currentUser, isAuthenticated, authStatus } =
+  storeToRefs(useAuthStore());
+
+const isUnavailable = computed(() => authStatus.value === "unavailable");
+
+const userPicSrc = computed(() =>
+  currentUser.value && currentUser.value.image
+    ? currentUser.value.image
+    : "/default-avatar.svg"
+);
 </script>

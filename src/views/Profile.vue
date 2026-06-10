@@ -89,78 +89,70 @@
   </div>
 </template>
 
-<script>
-import { mapState, mapActions } from "pinia";
+<script setup>
+import { computed, onMounted, watch } from "vue";
+import { storeToRefs } from "pinia";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/store/auth";
 import { useProfileStore } from "@/store/profile";
 import RwvArticleList from "@/components/ArticleList";
 
 const DEFAULT_AVATAR = "/default-avatar.svg";
 
-export default {
-  name: "RwvProfile",
-  components: { RwvArticleList },
-  mounted() {
-    this.fetchProfile(this.$route.params);
-  },
-  computed: {
-    ...mapState(useAuthStore, ["currentUser", "isAuthenticated"]),
-    ...mapState(useProfileStore, {
-      profile: "profile",
-      profileErrors: "errors"
-    }),
-    hasProfileErrors() {
-      return Object.keys(this.profileErrors || {}).length > 0;
-    },
-    profileLoaded() {
-      return !!(this.profile && this.profile.username);
-    },
-    username() {
-      return this.$route.params.username;
-    },
-    showFavorited() {
-      return this.$route.name === "profile-favorites";
-    },
-    currentPage() {
-      const p = parseInt(this.$route.query.page, 10);
-      return p > 0 ? p : 1;
-    },
-    avatarUrl() {
-      return this.profile && this.profile.image
-        ? this.profile.image
-        : DEFAULT_AVATAR;
-    }
-  },
-  methods: {
-    ...mapActions(useProfileStore, {
-      fetchProfile: "fetchProfile",
-      followProfile: "follow",
-      unfollowProfile: "unfollow"
-    }),
-    isCurrentUser() {
-      if (this.currentUser.username && this.profile.username) {
-        return this.currentUser.username === this.profile.username;
-      }
-      return false;
-    },
-    follow() {
-      if (!this.isAuthenticated) return;
-      this.followProfile(this.$route.params);
-    },
-    unfollow() {
-      this.unfollowProfile(this.$route.params);
-    },
-    onPageChange(page) {
-      const query = { ...this.$route.query };
-      if (page > 1) query.page = String(page);
-      else delete query.page;
-      this.$router.push({ path: this.$route.path, query });
-    }
-  },
-  watch: {
-    $route(to) {
-      this.fetchProfile(to.params);
-    }
+defineOptions({ name: "RwvProfile" });
+
+const route = useRoute();
+const router = useRouter();
+const profileStore = useProfileStore();
+const { currentUser, isAuthenticated } = storeToRefs(useAuthStore());
+const { profile, errors: profileErrors } = storeToRefs(profileStore);
+
+onMounted(() => profileStore.fetchProfile(route.params));
+// The component is reused between the articles/favorites tabs and other
+// profiles, so refetch on any route change.
+watch(route, (to) => profileStore.fetchProfile(to.params));
+
+const hasProfileErrors = computed(
+  () => Object.keys(profileErrors.value || {}).length > 0
+);
+
+const profileLoaded = computed(
+  () => !!(profile.value && profile.value.username)
+);
+
+const username = computed(() => route.params.username);
+
+const showFavorited = computed(() => route.name === "profile-favorites");
+
+const currentPage = computed(() => {
+  const p = parseInt(route.query.page, 10);
+  return p > 0 ? p : 1;
+});
+
+const avatarUrl = computed(() =>
+  profile.value && profile.value.image ? profile.value.image : DEFAULT_AVATAR
+);
+
+const isCurrentUser = () => {
+  if (currentUser.value.username && profile.value.username) {
+    return currentUser.value.username === profile.value.username;
   }
+  return false;
+};
+
+const follow = () => {
+  if (!isAuthenticated.value) return;
+  profileStore.follow(route.params);
+};
+
+const unfollow = () => {
+  profileStore.unfollow(route.params);
+};
+
+const onPageChange = (page) => {
+  const query = { ...route.query };
+  if (page > 1) query.page = String(page);
+  else delete query.page;
+  router.push({ path: route.path, query });
 };
 </script>

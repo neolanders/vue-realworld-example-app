@@ -70,77 +70,66 @@
   </div>
 </template>
 
-<script>
-import { mapState, mapActions } from "pinia";
+<script setup>
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "@/store/auth";
 import RwvListErrors from "@/components/ListErrors";
 import { extractErrors } from "@/common/errors";
 
-export default {
-  name: "RwvSettings",
-  components: { RwvListErrors },
-  data() {
-    return {
-      errors: {},
-      form: {
-        username: "",
-        email: "",
-        bio: "",
-        image: "",
-        password: ""
-      }
-    };
-  },
-  computed: {
-    ...mapState(useAuthStore, ["currentUser"]),
-    hasErrors() {
-      return Object.keys(this.errors).length > 0;
-    }
-  },
-  mounted() {
-    this.syncFromUser();
-  },
-  watch: {
-    "currentUser.username"() {
-      this.syncFromUser();
-    }
-  },
-  methods: {
-    ...mapActions(useAuthStore, {
-      updateUser: "updateUser",
-      logoutUser: "logout"
-    }),
-    syncFromUser() {
-      const u = this.currentUser || {};
-      this.form.username = u.username || "";
-      this.form.email = u.email || "";
-      this.form.bio = u.bio || "";
-      this.form.image = u.image || "";
-    },
-    updateSettings() {
-      const payload = {
-        username: this.form.username,
-        email: this.form.email,
-        bio: this.form.bio,
-        image: this.form.image
-      };
-      if (this.form.password) payload.password = this.form.password;
-      this.updateUser(payload)
-        .then(() => {
-          this.errors = {};
-          this.$router.push({
-            name: "profile",
-            params: { username: this.form.username }
-          });
-        })
-        .catch((error) => {
-          this.errors = extractErrors(error);
-        });
-    },
-    logout() {
-      this.logoutUser();
-      this.$router.push({ name: "home" });
-    }
-  }
+defineOptions({ name: "RwvSettings" });
+
+const router = useRouter();
+const authStore = useAuthStore();
+const { currentUser } = storeToRefs(authStore);
+
+const errors = ref({});
+const form = reactive({
+  username: "",
+  email: "",
+  bio: "",
+  image: "",
+  password: ""
+});
+
+const hasErrors = computed(() => Object.keys(errors.value).length > 0);
+
+const syncFromUser = () => {
+  const u = currentUser.value || {};
+  form.username = u.username || "";
+  form.email = u.email || "";
+  form.bio = u.bio || "";
+  form.image = u.image || "";
+};
+
+onMounted(syncFromUser);
+watch(() => currentUser.value.username, syncFromUser);
+
+const updateSettings = () => {
+  const payload = {
+    username: form.username,
+    email: form.email,
+    bio: form.bio,
+    image: form.image
+  };
+  if (form.password) payload.password = form.password;
+  authStore
+    .updateUser(payload)
+    .then(() => {
+      errors.value = {};
+      router.push({
+        name: "profile",
+        params: { username: form.username }
+      });
+    })
+    .catch((error) => {
+      errors.value = extractErrors(error);
+    });
+};
+
+const logout = () => {
+  authStore.logout();
+  router.push({ name: "home" });
 };
 </script>

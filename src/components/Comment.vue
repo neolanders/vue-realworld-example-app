@@ -22,55 +22,50 @@
   </div>
 </template>
 
-<script>
-import { mapState, mapActions } from "pinia";
+<script setup>
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/auth";
 import { useArticleStore } from "@/store/article";
 import { formatDate } from "@/common/format";
 import RwvListErrors from "./ListErrors.vue";
 import { extractErrors } from "@/common/errors";
 
-export default {
-  name: "RwvComment",
-  components: { RwvListErrors },
-  props: {
-    slug: { type: String, required: true },
-    comment: { type: Object, required: true }
-  },
-  data() {
-    return {
-      errors: {}
-    };
-  },
-  computed: {
-    isCurrentUser() {
-      if (this.currentUser.username && this.comment.author.username) {
-        return this.comment.author.username === this.currentUser.username;
-      }
-      return false;
-    },
-    authorImage() {
-      return this.comment.author && this.comment.author.image
-        ? this.comment.author.image
-        : "/default-avatar.svg";
-    },
-    hasErrors() {
-      return Object.keys(this.errors).length > 0;
-    },
-    ...mapState(useAuthStore, ["currentUser"])
-  },
-  methods: {
-    ...mapActions(useArticleStore, ["destroyComment"]),
-    formatDate,
-    destroy(slug, commentId) {
-      this.destroyComment({ slug, commentId })
-        .then(() => {
-          this.errors = {};
-        })
-        .catch((error) => {
-          this.errors = extractErrors(error);
-        });
-    }
+const props = defineProps({
+  slug: { type: String, required: true },
+  comment: { type: Object, required: true }
+});
+
+defineOptions({ name: "RwvComment" });
+
+const articleStore = useArticleStore();
+const { currentUser } = storeToRefs(useAuthStore());
+
+const errors = ref({});
+
+const isCurrentUser = computed(() => {
+  if (currentUser.value.username && props.comment.author.username) {
+    return props.comment.author.username === currentUser.value.username;
   }
+  return false;
+});
+
+const authorImage = computed(() =>
+  props.comment.author && props.comment.author.image
+    ? props.comment.author.image
+    : "/default-avatar.svg"
+);
+
+const hasErrors = computed(() => Object.keys(errors.value).length > 0);
+
+const destroy = (slug, commentId) => {
+  articleStore
+    .destroyComment({ slug, commentId })
+    .then(() => {
+      errors.value = {};
+    })
+    .catch((error) => {
+      errors.value = extractErrors(error);
+    });
 };
 </script>
