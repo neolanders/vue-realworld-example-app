@@ -24,10 +24,13 @@
   "scripts": {
     "build": "vite build",
     "format": "prettier --write \"src/**/*.{js,vue}\"",
+    "format:check": "prettier --check \"src/**/*.{js,vue}\"",
     "lint": "eslint src",
     "preview": "vite preview",
     "serve": "vite",
-    "test": "playwright test"
+    "test": "playwright test",
+    "test:e2e": "playwright test --grep-invert @security",
+    "test:e2e:security": "playwright test --grep @security"
   },
   "version": "0.1.0"
 }
