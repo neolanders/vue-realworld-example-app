@@ -36,18 +36,18 @@ router.beforeEach((to, from, next) =>
 new Vue({
   router,
   store,
-  render: h => h(App)
+  render: (h) => h(App)
 }).$mount("#app");
 
 window.__conduit_debug__ = {
-  getToken: function() {
+  getToken: function () {
     return JwtService.getToken();
   },
-  getAuthState: function() {
+  getAuthState: function () {
     if (!authResolved) return "loading";
     return store.getters.authStatus;
   },
-  getCurrentUser: function() {
+  getCurrentUser: function () {
     if (!store.getters.isAuthenticated) return null;
     var u = store.getters.currentUser || {};
     if (!u.username) return null;

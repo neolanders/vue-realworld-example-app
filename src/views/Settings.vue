@@ -130,7 +130,7 @@ export default {
             params: { username: this.form.username }
           });
         })
-        .catch(error => {
+        .catch((error) => {
           this.errors = extractErrors(error);
         });
     },

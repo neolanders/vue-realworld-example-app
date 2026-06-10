@@ -81,7 +81,7 @@ export default {
       }
       return [
         ...Array(Math.ceil(this.articlesCount / this.itemsPerPage)).keys()
-      ].map(e => e + 1);
+      ].map((e) => e + 1);
     },
     ...mapGetters(["articlesCount", "isLoading", "articles"])
   },

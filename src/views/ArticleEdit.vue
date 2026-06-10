@@ -137,7 +137,7 @@ export default {
             params: { slug: data.article.slug }
           });
         })
-        .catch(error => {
+        .catch((error) => {
           this.inProgress = false;
           this.errors = extractErrors(error);
         });

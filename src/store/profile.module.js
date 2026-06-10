@@ -15,7 +15,7 @@ const state = {
 const PROFILE_FETCH_RETRIES = 2;
 const PROFILE_FETCH_RETRY_DELAY = 400;
 
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const getters = {
   profile(state) {

@@ -43,7 +43,7 @@ const actions = {
           context.commit(SET_AUTH, data.user);
           resolve(data);
         })
-        .catch(error => {
+        .catch((error) => {
           context.commit(SET_ERROR, extractErrors(error));
           reject(error);
         });
@@ -59,7 +59,7 @@ const actions = {
           context.commit(SET_AUTH, data.user);
           resolve(data);
         })
-        .catch(error => {
+        .catch((error) => {
           context.commit(SET_ERROR, extractErrors(error));
           reject(error);
         });
@@ -77,7 +77,7 @@ const actions = {
             context.commit(SET_AUTH_UNAVAILABLE);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           const status = error && error.response && error.response.status;
           if (status >= 400 && status < 500) {
             // The token was rejected: clear it and show the logged-out UI.

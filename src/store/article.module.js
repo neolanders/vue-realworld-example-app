@@ -114,13 +114,13 @@ export const mutations = {
     state.comments = state.comments.concat([comment]);
   },
   [REMOVE_COMMENT](state, commentId) {
-    state.comments = state.comments.filter(c => c.id !== commentId);
+    state.comments = state.comments.filter((c) => c.id !== commentId);
   },
   [TAG_ADD](state, tag) {
     state.article.tagList = state.article.tagList.concat([tag]);
   },
   [TAG_REMOVE](state, tag) {
-    state.article.tagList = state.article.tagList.filter(t => t !== tag);
+    state.article.tagList = state.article.tagList.filter((t) => t !== tag);
   },
   [RESET_STATE]() {
     for (let f in state) {

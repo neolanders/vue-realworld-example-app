@@ -64,7 +64,7 @@ export default {
         .then(() => {
           this.errors = {};
         })
-        .catch(error => {
+        .catch((error) => {
           this.errors = extractErrors(error);
         });
     }

@@ -51,7 +51,7 @@ export default {
           this.comment = null;
           this.errors = {};
         })
-        .catch(error => {
+        .catch((error) => {
           this.errors = extractErrors(error);
         });
     }
