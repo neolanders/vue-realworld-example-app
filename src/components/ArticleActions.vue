@@ -29,14 +29,10 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import {
-  FAVORITE_ADD,
-  FAVORITE_REMOVE,
-  ARTICLE_DELETE,
-  FETCH_PROFILE_FOLLOW,
-  FETCH_PROFILE_UNFOLLOW
-} from "@/store/actions.type";
+import { mapState, mapActions } from "pinia";
+import { useAuthStore } from "@/store/auth";
+import { useArticleStore } from "@/store/article";
+import { useProfileStore } from "@/store/profile";
 
 export default {
   name: "RwvArticleActions",
@@ -45,7 +41,8 @@ export default {
     canModify: { type: Boolean, required: true }
   },
   computed: {
-    ...mapGetters(["profile", "isAuthenticated"]),
+    ...mapState(useProfileStore, ["profile"]),
+    ...mapState(useAuthStore, ["isAuthenticated"]),
     editArticleLink() {
       return { name: "article-edit", params: { slug: this.article.slug } };
     },
@@ -68,29 +65,40 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useArticleStore, {
+      addFavorite: "addFavorite",
+      removeFavorite: "removeFavorite",
+      destroyArticle: "deleteArticle"
+    }),
+    ...mapActions(useProfileStore, {
+      followProfile: "follow",
+      unfollowProfile: "unfollow"
+    }),
     toggleFavorite() {
       if (!this.isAuthenticated) {
         this.$router.push({ name: "login" });
         return;
       }
-      const action = this.article.favorited ? FAVORITE_REMOVE : FAVORITE_ADD;
-      this.$store.dispatch(action, this.article.slug);
+      if (this.article.favorited) {
+        this.removeFavorite(this.article.slug);
+      } else {
+        this.addFavorite(this.article.slug);
+      }
     },
     toggleFollow() {
       if (!this.isAuthenticated) {
         this.$router.push({ name: "login" });
         return;
       }
-      const action = this.article.following
-        ? FETCH_PROFILE_UNFOLLOW
-        : FETCH_PROFILE_FOLLOW;
-      this.$store.dispatch(action, {
-        username: this.profile.username
-      });
+      if (this.article.following) {
+        this.unfollowProfile({ username: this.profile.username });
+      } else {
+        this.followProfile({ username: this.profile.username });
+      }
     },
     async deleteArticle() {
       try {
-        await this.$store.dispatch(ARTICLE_DELETE, this.article.slug);
+        await this.destroyArticle(this.article.slug);
         this.$router.push("/");
       } catch (err) {
         console.error(err);

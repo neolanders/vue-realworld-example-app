@@ -10,7 +10,9 @@
             </router-link>
           </p>
           <ul v-if="errors" class="error-messages">
-            <li v-for="(v, k) in errors" :key="k">{{ k }} {{ v | error }}</li>
+            <li v-for="(v, k) in errors" :key="k">
+              {{ k }} {{ formatError(v) }}
+            </li>
           </ul>
           <form @submit.prevent="onSubmit(email, password)">
             <fieldset class="form-group">
@@ -42,8 +44,9 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
-import { LOGIN } from "@/store/actions.type";
+import { mapState, mapActions } from "pinia";
+import { useAuthStore } from "@/store/auth";
+import { formatError } from "@/common/format";
 
 export default {
   name: "RwvLogin",
@@ -54,17 +57,16 @@ export default {
     };
   },
   methods: {
+    ...mapActions(useAuthStore, ["login"]),
+    formatError,
     onSubmit(email, password) {
-      this.$store
-        .dispatch(LOGIN, { email, password })
+      this.login({ email, password })
         .then(() => this.$router.push(this.postAuthRoute))
         .catch(() => {});
     }
   },
   computed: {
-    ...mapState({
-      errors: (state) => state.auth.errors
-    }),
+    ...mapState(useAuthStore, ["errors"]),
     postAuthRoute() {
       const redirect = this.$route.query.redirect;
       // Only allow same-app paths to avoid open redirects.

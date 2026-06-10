@@ -71,9 +71,9 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState, mapActions } from "pinia";
+import { useAuthStore } from "@/store/auth";
 import RwvListErrors from "@/components/ListErrors";
-import { LOGOUT, UPDATE_USER } from "@/store/actions.type";
 import { extractErrors } from "@/common/errors";
 
 export default {
@@ -92,7 +92,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["currentUser"]),
+    ...mapState(useAuthStore, ["currentUser"]),
     hasErrors() {
       return Object.keys(this.errors).length > 0;
     }
@@ -106,6 +106,10 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useAuthStore, {
+      updateUser: "updateUser",
+      logoutUser: "logout"
+    }),
     syncFromUser() {
       const u = this.currentUser || {};
       this.form.username = u.username || "";
@@ -121,8 +125,7 @@ export default {
         image: this.form.image
       };
       if (this.form.password) payload.password = this.form.password;
-      this.$store
-        .dispatch(UPDATE_USER, payload)
+      this.updateUser(payload)
         .then(() => {
           this.errors = {};
           this.$router.push({
@@ -135,9 +138,8 @@ export default {
         });
     },
     logout() {
-      this.$store.dispatch(LOGOUT).then(() => {
-        this.$router.push({ name: "home" });
-      });
+      this.logoutUser();
+      this.$router.push({ name: "home" });
     }
   }
 };

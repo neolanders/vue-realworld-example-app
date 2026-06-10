@@ -70,19 +70,21 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState, mapActions } from "pinia";
+import { useAuthStore } from "@/store/auth";
+import { useHomeStore } from "@/store/home";
 import RwvTag from "@/components/VTag";
 import RwvArticleList from "@/components/ArticleList";
-import { FETCH_TAGS } from "@/store/actions.type";
 
 export default {
   name: "RwvHome",
   components: { RwvTag, RwvArticleList },
   mounted() {
-    this.$store.dispatch(FETCH_TAGS);
+    this.fetchTags();
   },
   computed: {
-    ...mapGetters(["isAuthenticated", "tags", "isLoading", "articles"]),
+    ...mapState(useAuthStore, ["isAuthenticated"]),
+    ...mapState(useHomeStore, ["tags", "isLoading", "articles"]),
     tag() {
       return this.$route.params.tag;
     },
@@ -100,6 +102,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useHomeStore, ["fetchTags"]),
     goTo(query) {
       const target = { path: "/", query };
       this.$router.push(target);

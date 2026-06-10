@@ -10,7 +10,9 @@
             </router-link>
           </p>
           <ul v-if="errors" class="error-messages">
-            <li v-for="(v, k) in errors" :key="k">{{ k }} {{ v | error }}</li>
+            <li v-for="(v, k) in errors" :key="k">
+              {{ k }} {{ formatError(v) }}
+            </li>
           </ul>
           <form @submit.prevent="onSubmit">
             <fieldset class="form-group">
@@ -51,8 +53,9 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
-import { REGISTER } from "@/store/actions.type";
+import { mapState, mapActions } from "pinia";
+import { useAuthStore } from "@/store/auth";
+import { formatError } from "@/common/format";
 
 export default {
   name: "RwvRegister",
@@ -64,9 +67,7 @@ export default {
     };
   },
   computed: {
-    ...mapState({
-      errors: (state) => state.auth.errors
-    }),
+    ...mapState(useAuthStore, ["errors"]),
     postAuthRoute() {
       const redirect = this.$route.query.redirect;
       // Only allow same-app paths to avoid open redirects.
@@ -77,13 +78,14 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useAuthStore, ["register"]),
+    formatError,
     onSubmit() {
-      this.$store
-        .dispatch(REGISTER, {
-          email: this.email,
-          password: this.password,
-          username: this.username
-        })
+      this.register({
+        email: this.email,
+        password: this.password,
+        username: this.username
+      })
         .then(() => this.$router.push(this.postAuthRoute))
         .catch(() => {});
     }

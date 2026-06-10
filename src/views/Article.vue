@@ -60,18 +60,19 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState } from "pinia";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-import store from "@/store";
+import pinia from "@/store";
+import { useArticleStore } from "@/store/article";
+import { useAuthStore } from "@/store/auth";
 import RwvArticleMeta from "@/components/ArticleMeta";
 import RwvComment from "@/components/Comment";
 import RwvCommentEditor from "@/components/CommentEditor";
 import RwvTag from "@/components/VTag";
-import { FETCH_ARTICLE, FETCH_COMMENTS } from "@/store/actions.type";
 
 export default {
-  name: "rwv-article",
+  name: "RwvArticle",
   props: {
     slug: {
       type: String,
@@ -85,15 +86,17 @@ export default {
     RwvTag
   },
   beforeRouteEnter(to, from, next) {
+    const articleStore = useArticleStore(pinia);
     Promise.all([
-      store.dispatch(FETCH_ARTICLE, to.params.slug).catch(() => null),
-      store.dispatch(FETCH_COMMENTS, to.params.slug).catch(() => null)
+      articleStore.fetchArticle(to.params.slug).catch(() => null),
+      articleStore.fetchComments(to.params.slug).catch(() => null)
     ]).then(() => {
       next();
     });
   },
   computed: {
-    ...mapGetters(["article", "currentUser", "comments", "isAuthenticated"])
+    ...mapState(useArticleStore, ["article", "comments"]),
+    ...mapState(useAuthStore, ["currentUser", "isAuthenticated"])
   },
   methods: {
     parseMarkdown(content) {

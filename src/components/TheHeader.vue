@@ -11,8 +11,7 @@
         <li class="nav-item">
           <router-link
             class="nav-link"
-            active-class="active"
-            exact
+            exact-active-class="active"
             :to="{ name: 'home' }"
           >
             Home
@@ -21,8 +20,7 @@
         <li class="nav-item">
           <router-link
             class="nav-link"
-            active-class="active"
-            exact
+            exact-active-class="active"
             :to="{ name: 'login' }"
           >
             <i class="ion-compose"></i>Sign in
@@ -31,8 +29,7 @@
         <li class="nav-item">
           <router-link
             class="nav-link"
-            active-class="active"
-            exact
+            exact-active-class="active"
             :to="{ name: 'register' }"
           >
             <i class="ion-compose"></i>Sign up
@@ -43,8 +40,7 @@
         <li class="nav-item">
           <router-link
             class="nav-link"
-            active-class="active"
-            exact
+            exact-active-class="active"
             :to="{ name: 'home' }"
           >
             Home
@@ -62,8 +58,7 @@
         <li class="nav-item">
           <router-link
             class="nav-link"
-            active-class="active"
-            exact
+            exact-active-class="active"
             :to="{ name: 'settings' }"
           >
             <i class="ion-gear-a"></i>&nbsp;Settings
@@ -72,8 +67,7 @@
         <li class="nav-item" v-if="currentUser.username">
           <router-link
             class="nav-link"
-            active-class="active"
-            exact
+            exact-active-class="active"
             :to="{
               name: 'profile',
               params: { username: currentUser.username }
@@ -89,12 +83,13 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState } from "pinia";
+import { useAuthStore } from "@/store/auth";
 
 export default {
   name: "RwvHeader",
   computed: {
-    ...mapGetters(["currentUser", "isAuthenticated", "authStatus"]),
+    ...mapState(useAuthStore, ["currentUser", "isAuthenticated", "authStatus"]),
     isUnavailable() {
       return this.authStatus === "unavailable";
     },

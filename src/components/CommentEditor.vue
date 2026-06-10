@@ -20,9 +20,10 @@
 </template>
 
 <script>
+import { mapActions } from "pinia";
+import { useArticleStore } from "@/store/article";
 import RwvListErrors from "./ListErrors.vue";
-import { COMMENT_CREATE } from "../store/actions.type.js";
-import { extractErrors } from "../common/errors";
+import { extractErrors } from "@/common/errors";
 
 export default {
   name: "RwvCommentEditor",
@@ -44,9 +45,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useArticleStore, ["createComment"]),
     onSubmit(slug, comment) {
-      this.$store
-        .dispatch(COMMENT_CREATE, { slug, comment })
+      this.createComment({ slug, comment })
         .then(() => {
           this.comment = null;
           this.errors = {};

@@ -1,4 +1,4 @@
-<template v-show="errors">
+<template>
   <ul class="error-messages">
     <li v-for="(value, key) in errors" :key="key">
       <span v-text="key" />
@@ -9,7 +9,7 @@
 
 <script>
 export default {
-  name: "RwvListErorrs",
+  name: "RwvListErrors",
   props: {
     errors: { type: Object, required: true }
   }

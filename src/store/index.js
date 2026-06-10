@@ -1,18 +1,7 @@
-import Vue from "vue";
-import Vuex from "vuex";
+import { createPinia } from "pinia";
 
-import home from "./home.module";
-import auth from "./auth.module";
-import article from "./article.module";
-import profile from "./profile.module";
+// Exported as an instance so router guards and `beforeRouteEnter` hooks can
+// obtain stores outside of component setup: `useAuthStore(pinia)`.
+const pinia = createPinia();
 
-Vue.use(Vuex);
-
-export default new Vuex.Store({
-  modules: {
-    home,
-    auth,
-    article,
-    profile
-  }
-});
+export default pinia;

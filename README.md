@@ -1,21 +1,19 @@
 # ![RealWorld Example App](./static/rwv-logo.png)
 
-> **Vue 2** codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/realworld-apps/realworld) spec and API.
+> **Vue 3** codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/realworld-apps/realworld) spec and API.
 
 Project demo is available at https://vue-vuex-realworld.netlify.app/
 
-This codebase demonstrates a fully fledged frontend application built with **Vue 2**, including CRUD operations, authentication, routing, pagination, and more — backed by the shared RealWorld end-to-end test suite.
+This codebase demonstrates a fully fledged frontend application built with **Vue 3**, including CRUD operations, authentication, routing, pagination, and more — backed by the shared RealWorld end-to-end test suite.
 
-## ⚠️ Do not start a new project from this codebase
+## Looking for the Vue 2 version?
 
-**Vue 2 reached end of life on December 31, 2023.** It no longer receives features, bug fixes, or security patches, and neither do Vuex 3 / Vue Router 3. This repository is kept as a *reference implementation* of the RealWorld spec for the Vue 2 ecosystem — useful for studying patterns, comparing frameworks, or testing backends against a known-good frontend. It is **not** a sound base for a serious new project: start from [Vue 3](https://vuejs.org/) (or another maintained framework) instead.
-
-If your company runs an existing Vue 2 application that cannot migrate yet, [HeroDevs Never-Ending Support for Vue 2](https://www.herodevs.com/support/nes-vue) provides commercial security patches as a drop-in replacement. It is the option [officially endorsed by the Vue team](https://v2.vuejs.org/lts/), built in partnership with Vue's creator and core team members.
+The original Vue 2 implementation lives on as a frozen reference at [realworld-apps/vue-2-realworld-example-app](https://github.com/realworld-apps/vue-2-realworld-example-app). Vue 2 reached end of life on December 31, 2023, so that repo is kept for studying patterns and comparing frameworks — not as a base for new projects. If your company maintains a Vue 2 application that cannot migrate yet, see the notes there about [HeroDevs Never-Ending Support](https://www.herodevs.com/support/nes-vue), the option [officially endorsed by the Vue team](https://v2.vuejs.org/lts/).
 
 ## Stack
 
-- [Vue 2.7](https://v2.vuejs.org/) with [Vuex 3](https://v3.vuex.vuejs.org/) and [Vue Router 3](https://v3.router.vuejs.org/)
-- [Vite 7](https://vitejs.dev/) (via `@vitejs/plugin-vue2`) for dev server and builds
+- [Vue 3](https://vuejs.org/) with [Pinia](https://pinia.vuejs.org/) and [Vue Router 4](https://router.vuejs.org/)
+- [Vite](https://vitejs.dev/) (via `@vitejs/plugin-vue`) for dev server and builds
 - [Bun](https://bun.sh/) as package manager / script runner
 - [Playwright](https://playwright.dev/) running the official [RealWorld e2e test suite](https://github.com/realworld-apps/realworld), vendored as the `realworld` git submodule
 - [marked](https://marked.js.org/) + [DOMPurify](https://github.com/cure53/DOMPurify) for safe markdown rendering, [date-fns](https://date-fns.org/) for dates
@@ -28,7 +26,7 @@ The visual theme is the shared [Conduit Minimal CSS](https://github.com/realworl
 The spec and test suite live in a git submodule, and the app imports its theme from there, so clone with submodules:
 
 ```bash
-git clone --recurse-submodules <repo-url>
+git clone --recurse-submodules https://github.com/realworld-apps/vue-realworld-example-app
 # or, in an existing clone:
 git submodule update --init
 
@@ -52,7 +50,7 @@ VITE_API_URL=http://localhost:8000/api bun run serve
 
 ## Testing
 
-The Jest unit tests of the original project were replaced by the official RealWorld Playwright e2e suite, which exercises the app against the spec:
+The app is tested with the official RealWorld Playwright e2e suite, which exercises it against the spec:
 
 ```bash
 # first time only: install Playwright browsers

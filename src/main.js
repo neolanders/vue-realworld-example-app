@@ -2,42 +2,35 @@
 // submodule so it can't drift from the templates/selectors contract.
 import "../realworld/assets/theme/styles.css";
 
-import Vue from "vue";
+import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
-import store from "./store";
+import pinia from "./store";
 
-import { CHECK_AUTH } from "./store/actions.type";
+import { useAuthStore } from "./store/auth";
 import JwtService from "./common/jwt.service";
-import DateFilter from "./common/date.filter";
-import ErrorFilter from "./common/error.filter";
 
-Vue.config.productionTip = false;
-Vue.filter("date", DateFilter);
-Vue.filter("error", ErrorFilter);
+const app = createApp(App);
+app.use(pinia);
+app.use(router);
+
+const auth = useAuthStore(pinia);
 
 let authResolved = false;
-router.beforeEach((to, from, next) =>
-  Promise.all([store.dispatch(CHECK_AUTH)]).then(() => {
-    authResolved = true;
-    // Auth-gated routes are only decided once the auth check has resolved,
-    // so an invalid token redirects away instead of showing a broken page.
-    const needsAuth =
-      (to.meta && to.meta.requiresAuth) ||
-      (to.path === "/" && to.query.feed === "following");
-    if (needsAuth && !store.getters.isAuthenticated) {
-      next({ path: "/login" });
-    } else {
-      next();
-    }
-  })
-);
+router.beforeEach(async (to) => {
+  await auth.checkAuth();
+  authResolved = true;
+  // Auth-gated routes are only decided once the auth check has resolved,
+  // so an invalid token redirects away instead of showing a broken page.
+  const needsAuth =
+    (to.meta && to.meta.requiresAuth) ||
+    (to.path === "/" && to.query.feed === "following");
+  if (needsAuth && !auth.isAuthenticated) {
+    return { path: "/login" };
+  }
+});
 
-new Vue({
-  router,
-  store,
-  render: (h) => h(App)
-}).$mount("#app");
+app.mount("#app");
 
 window.__conduit_debug__ = {
   getToken: function () {
@@ -45,11 +38,11 @@ window.__conduit_debug__ = {
   },
   getAuthState: function () {
     if (!authResolved) return "loading";
-    return store.getters.authStatus;
+    return auth.authStatus;
   },
   getCurrentUser: function () {
-    if (!store.getters.isAuthenticated) return null;
-    var u = store.getters.currentUser || {};
+    if (!auth.isAuthenticated) return null;
+    const u = auth.user || {};
     if (!u.username) return null;
     return {
       username: u.username,

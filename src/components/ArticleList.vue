@@ -20,10 +20,10 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState, mapActions } from "pinia";
+import { useHomeStore } from "@/store/home";
 import RwvArticlePreview from "./VArticlePreview";
 import VPagination from "./VPagination";
-import { FETCH_ARTICLES } from "../store/actions.type";
 
 export default {
   name: "RwvArticleList",
@@ -60,6 +60,7 @@ export default {
       default: 1
     }
   },
+  emits: ["update:currentPage"],
   computed: {
     page() {
       return this.currentPage > 0 ? this.currentPage : 1;
@@ -83,7 +84,7 @@ export default {
         ...Array(Math.ceil(this.articlesCount / this.itemsPerPage)).keys()
       ].map((e) => e + 1);
     },
-    ...mapGetters(["articlesCount", "isLoading", "articles"])
+    ...mapState(useHomeStore, ["articlesCount", "isLoading", "articles"])
   },
   watch: {
     page() {
@@ -106,8 +107,9 @@ export default {
     this.fetchArticles();
   },
   methods: {
+    ...mapActions(useHomeStore, { fetchHomeArticles: "fetchArticles" }),
     fetchArticles() {
-      this.$store.dispatch(FETCH_ARTICLES, this.listConfig);
+      this.fetchHomeArticles(this.listConfig);
     },
     emitPage(p) {
       this.$emit("update:currentPage", p);

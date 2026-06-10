@@ -13,7 +13,7 @@
       >
         {{ comment.author.username }}
       </router-link>
-      <span class="date-posted">{{ comment.createdAt | date }}</span>
+      <span class="date-posted">{{ formatDate(comment.createdAt) }}</span>
       <span v-if="isCurrentUser" class="mod-options">
         <i class="ion-trash-a" @click="destroy(slug, comment.id)"></i>
       </span>
@@ -23,9 +23,11 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState, mapActions } from "pinia";
+import { useAuthStore } from "@/store/auth";
+import { useArticleStore } from "@/store/article";
+import { formatDate } from "@/common/format";
 import RwvListErrors from "./ListErrors.vue";
-import { COMMENT_DESTROY } from "@/store/actions.type";
 import { extractErrors } from "@/common/errors";
 
 export default {
@@ -55,12 +57,13 @@ export default {
     hasErrors() {
       return Object.keys(this.errors).length > 0;
     },
-    ...mapGetters(["currentUser"])
+    ...mapState(useAuthStore, ["currentUser"])
   },
   methods: {
+    ...mapActions(useArticleStore, ["destroyComment"]),
+    formatDate,
     destroy(slug, commentId) {
-      this.$store
-        .dispatch(COMMENT_DESTROY, { slug, commentId })
+      this.destroyComment({ slug, commentId })
         .then(() => {
           this.errors = {};
         })

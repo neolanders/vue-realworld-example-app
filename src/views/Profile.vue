@@ -51,8 +51,7 @@
                 <li class="nav-item">
                   <router-link
                     class="nav-link"
-                    active-class="active"
-                    exact
+                    exact-active-class="active"
                     :to="{ name: 'profile', params: { username } }"
                   >
                     My Articles
@@ -61,8 +60,7 @@
                 <li class="nav-item">
                   <router-link
                     class="nav-link"
-                    active-class="active"
-                    exact
+                    exact-active-class="active"
                     :to="{ name: 'profile-favorites', params: { username } }"
                   >
                     Favorited Articles
@@ -92,13 +90,10 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState, mapActions } from "pinia";
+import { useAuthStore } from "@/store/auth";
+import { useProfileStore } from "@/store/profile";
 import RwvArticleList from "@/components/ArticleList";
-import {
-  FETCH_PROFILE,
-  FETCH_PROFILE_FOLLOW,
-  FETCH_PROFILE_UNFOLLOW
-} from "@/store/actions.type";
 
 const DEFAULT_AVATAR = "/default-avatar.svg";
 
@@ -106,15 +101,14 @@ export default {
   name: "RwvProfile",
   components: { RwvArticleList },
   mounted() {
-    this.$store.dispatch(FETCH_PROFILE, this.$route.params);
+    this.fetchProfile(this.$route.params);
   },
   computed: {
-    ...mapGetters([
-      "currentUser",
-      "profile",
-      "profileErrors",
-      "isAuthenticated"
-    ]),
+    ...mapState(useAuthStore, ["currentUser", "isAuthenticated"]),
+    ...mapState(useProfileStore, {
+      profile: "profile",
+      profileErrors: "errors"
+    }),
     hasProfileErrors() {
       return Object.keys(this.profileErrors || {}).length > 0;
     },
@@ -138,6 +132,11 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useProfileStore, {
+      fetchProfile: "fetchProfile",
+      followProfile: "follow",
+      unfollowProfile: "unfollow"
+    }),
     isCurrentUser() {
       if (this.currentUser.username && this.profile.username) {
         return this.currentUser.username === this.profile.username;
@@ -146,10 +145,10 @@ export default {
     },
     follow() {
       if (!this.isAuthenticated) return;
-      this.$store.dispatch(FETCH_PROFILE_FOLLOW, this.$route.params);
+      this.followProfile(this.$route.params);
     },
     unfollow() {
-      this.$store.dispatch(FETCH_PROFILE_UNFOLLOW, this.$route.params);
+      this.unfollowProfile(this.$route.params);
     },
     onPageChange(page) {
       const query = { ...this.$route.query };
@@ -160,7 +159,7 @@ export default {
   },
   watch: {
     $route(to) {
-      this.$store.dispatch(FETCH_PROFILE, to.params);
+      this.fetchProfile(to.params);
     }
   }
 };

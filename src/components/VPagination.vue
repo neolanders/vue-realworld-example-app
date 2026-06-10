@@ -32,6 +32,7 @@ export default {
       required: true
     }
   },
+  emits: ["update:currentPage"],
   methods: {
     changePage(goToPage) {
       if (goToPage === this.currentPage) return;

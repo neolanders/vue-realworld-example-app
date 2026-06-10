@@ -1,10 +1,7 @@
-import Vue from "vue";
-import Router from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 
-Vue.use(Router);
-
-const router = new Router({
-  mode: "history",
+const router = createRouter({
+  history: createWebHistory(),
   routes: [
     {
       name: "home",
@@ -64,6 +61,6 @@ const router = new Router({
   ]
 });
 
-// Auth-gated redirects live in main.js, after CHECK_AUTH has resolved.
+// Auth-gated redirects live in main.js, after the auth check has resolved.
 
 export default router;
