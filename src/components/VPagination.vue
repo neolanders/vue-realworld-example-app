@@ -21,7 +21,7 @@
 
 <script>
 export default {
-  name: "Pagination",
+  name: "VPagination",
   props: {
     pages: {
       type: Array,

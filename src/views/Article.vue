@@ -61,7 +61,7 @@
 
 <script>
 import { mapGetters } from "vuex";
-import marked from "marked";
+import { marked } from "marked";
 import DOMPurify from "dompurify";
 import store from "@/store";
 import RwvArticleMeta from "@/components/ArticleMeta";
@@ -98,7 +98,7 @@ export default {
   methods: {
     parseMarkdown(content) {
       // The body comes from the API and may contain attacker-controlled HTML.
-      return DOMPurify.sanitize(marked(content));
+      return DOMPurify.sanitize(marked.parse(content));
     }
   }
 };

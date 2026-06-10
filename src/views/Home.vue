@@ -76,7 +76,7 @@ import RwvArticleList from "@/components/ArticleList";
 import { FETCH_TAGS } from "@/store/actions.type";
 
 export default {
-  name: "home",
+  name: "RwvHome",
   components: { RwvTag, RwvArticleList },
   mounted() {
     this.$store.dispatch(FETCH_TAGS);

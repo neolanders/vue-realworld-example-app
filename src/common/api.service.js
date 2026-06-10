@@ -1,44 +1,65 @@
-import Vue from "vue";
-import axios from "axios";
-import VueAxios from "vue-axios";
 import JwtService from "@/common/jwt.service";
 import { API_URL } from "@/common/config";
 
+// Thin fetch wrapper. Resolves with `{ data }` and rejects with an error
+// carrying `response: { status, data }` for HTTP errors (no `response` for
+// network failures), which is the shape extractErrors() consumes.
+async function request(method, path, body) {
+  const headers = { Accept: "application/json" };
+  const token = JwtService.getToken();
+  if (token) {
+    headers["Authorization"] = `Token ${token}`;
+  }
+  const options = { method, headers };
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+    options.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(`${API_URL}/${path}`, options);
+
+  // 204s and malformed payloads both yield null data rather than throwing.
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok) {
+    const error = new Error(`[RWV] API ${method} ${path} ${response.status}`);
+    error.response = { status: response.status, data: data || {} };
+    throw error;
+  }
+  return { data };
+}
+
 const ApiService = {
-  init() {
-    Vue.use(VueAxios, axios);
-    Vue.axios.defaults.baseURL = API_URL;
-  },
-
-  setHeader() {
-    Vue.axios.defaults.headers.common[
-      "Authorization"
-    ] = `Token ${JwtService.getToken()}`;
-  },
-
-  query(resource, params) {
-    return Vue.axios.get(resource, params);
+  query(resource, config) {
+    const params = (config && config.params) || {};
+    const search = new URLSearchParams(params).toString();
+    return request("GET", search ? `${resource}?${search}` : resource);
   },
 
   get(resource, slug = "") {
     const path = slug ? `${resource}/${slug}` : resource;
-    return Vue.axios.get(path);
+    return request("GET", path);
   },
 
   post(resource, params) {
-    return Vue.axios.post(`${resource}`, params);
+    return request("POST", resource, params);
   },
 
   update(resource, slug, params) {
-    return Vue.axios.put(`${resource}/${slug}`, params);
+    return request("PUT", `${resource}/${slug}`, params);
   },
 
   put(resource, params) {
-    return Vue.axios.put(`${resource}`, params);
+    return request("PUT", resource, params);
   },
 
   delete(resource) {
-    return Vue.axios.delete(resource);
+    return request("DELETE", resource);
   }
 };
 

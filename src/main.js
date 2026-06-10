@@ -2,10 +2,8 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
-import "./registerServiceWorker";
 
 import { CHECK_AUTH } from "./store/actions.type";
-import ApiService from "./common/api.service";
 import JwtService from "./common/jwt.service";
 import DateFilter from "./common/date.filter";
 import ErrorFilter from "./common/error.filter";
@@ -13,8 +11,6 @@ import ErrorFilter from "./common/error.filter";
 Vue.config.productionTip = false;
 Vue.filter("date", DateFilter);
 Vue.filter("error", ErrorFilter);
-
-ApiService.init();
 
 let authResolved = false;
 router.beforeEach((to, from, next) =>
