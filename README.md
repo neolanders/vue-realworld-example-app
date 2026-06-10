@@ -1,91 +1,77 @@
-[![RealWorld Frontend](https://img.shields.io/badge/realworld-frontend-%23783578.svg)](http://realworld.io)
-[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
-
-----
-##New Maintainers wanted##
-Anyone up for the challenge of maintaining this repo?
-Reach out on twitter @vilsbole
-----
-
-
-
 # ![RealWorld Example App](./static/rwv-logo.png)
 
-> Vue.js codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld) spec and API.
+> **Vue 2** codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/realworld-apps/realworld) spec and API.
 
 Project demo is available at https://vue-vuex-realworld.netlify.app/
 
-This codebase was created to demonstrate a fully fledged fullstack application built with **Vue.js** including CRUD operations, authentication, routing, pagination, and more.
+This codebase demonstrates a fully fledged frontend application built with **Vue 2**, including CRUD operations, authentication, routing, pagination, and more — backed by the shared RealWorld end-to-end test suite.
 
-We've gone to great lengths to adhere to the **Vue.js** community styleguides & best practices.
+## ⚠️ Do not start a new project from this codebase
 
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
+**Vue 2 reached end of life on December 31, 2023.** It no longer receives features, bug fixes, or security patches, and neither do Vuex 3 / Vue Router 3. This repository is kept as a *reference implementation* of the RealWorld spec for the Vue 2 ecosystem — useful for studying patterns, comparing frameworks, or testing backends against a known-good frontend. It is **not** a sound base for a serious new project: start from [Vue 3](https://vuejs.org/) (or another maintained framework) instead.
+
+If your company runs an existing Vue 2 application that cannot migrate yet, [HeroDevs Never-Ending Support for Vue 2](https://www.herodevs.com/support/nes-vue) provides commercial security patches as a drop-in replacement. It is the option [officially endorsed by the Vue team](https://v2.vuejs.org/lts/), built in partnership with Vue's creator and core team members.
+
+## Stack
+
+- [Vue 2.7](https://v2.vuejs.org/) with [Vuex 3](https://v3.vuex.vuejs.org/) and [Vue Router 3](https://v3.router.vuejs.org/)
+- [Vite 5](https://vitejs.dev/) (via `@vitejs/plugin-vue2`) for dev server and builds
+- [Bun](https://bun.sh/) as package manager / script runner
+- [Playwright](https://playwright.dev/) running the official [RealWorld e2e test suite](https://github.com/realworld-apps/realworld), vendored as the `realworld` git submodule
+- [marked](https://marked.js.org/) + [DOMPurify](https://github.com/cure53/DOMPurify) for safe markdown rendering, [date-fns](https://date-fns.org/) for dates
+- A thin `fetch` wrapper instead of axios (`src/common/api.service.js`)
+
+The visual theme is the shared [Conduit Minimal CSS](https://github.com/realworld-apps/realworld/blob/main/assets/theme/styles.css) from the RealWorld spec, imported directly from the submodule (`realworld/assets/theme/styles.css`) in `src/main.js` so it stays in sync with the templates and the e2e selectors contract.
 
 ## Getting started
 
-Before contributing please read the following:
-
-1. [RealWorld guidelines](https://github.com/gothinkster/realworld/tree/master/spec) for implementing a new framework,
-2. [RealWorld frontend instructions](https://github.com/gothinkster/realworld-starter-kit/blob/master/FRONTEND_INSTRUCTIONS.md)
-3. [Realworld API endpoints](https://github.com/gothinkster/realworld/tree/master/api)
-4. [Vue.js styleguide](https://vuejs.org/v2/style-guide/index.html). Priority A and B categories must be respected.
-5. [Editorconfig setup](https://editorconfig.org/#download). Most of the common editors support editorconfig by default (check the editorconfig download link for your ide), but editorconfig npm package have to installed globally for it to work,
+The spec and test suite live in a git submodule, and the app imports its theme from there, so clone with submodules:
 
 ```bash
-# install editorconfig globally
-> npm install -g editorconfig
+git clone --recurse-submodules <repo-url>
+# or, in an existing clone:
+git submodule update --init
+
+bun install
+
+# serve with hot reload at http://localhost:8080
+bun run serve
+
+# production build / preview
+bun run build
+bun run preview
 ```
 
-The stack is built using [vue-cli webpack](https://github.com/vuejs-templates/webpack) so to get started all you have to do is:
+## Configuration
 
-``` bash
-# install dependencies
-> yarn install
-# serve with hot reload at localhost:8080
-> yarn serve
+The backend API defaults to `https://api.realworld.show/api`. Point the app at any other spec-compliant RealWorld backend with the `VITE_API_URL` env var (in the shell, or an `.env.local` file):
+
+```bash
+VITE_API_URL=http://localhost:8000/api bun run serve
 ```
 
-Other commands available are:
+## Testing
 
-``` bash
-# build for production with minification
-yarn run build
+The Jest unit tests of the original project were replaced by the official RealWorld Playwright e2e suite, which exercises the app against the spec:
 
-# run unit tests
-yarn test
+```bash
+# first time only: install Playwright browsers
+bunx playwright install --with-deps chromium
+
+bun run test
 ```
 
-## To know
+Playwright boots the Vite dev server itself (see `playwright.config.ts`).
 
-Current arbitrary choices are:
+## Linting & formatting
 
-- Vuex modules for store
-- Vue-axios for ajax requests
-- 'rwv' as prefix for components
+```bash
+bun run lint     # ESLint + eslint-plugin-vue (catches Vue-specific errors, incl. in templates)
+bun run format   # Prettier (code style)
+```
 
-These can be changed when the contributors reach a consensus.
+These are complementary, not alternatives: Prettier only formats, while `eslint-plugin-vue` is currently the only linter that understands Vue SFC *templates*. `eslint-config-prettier` disables the stylistic ESLint rules so the two don't fight.
 
-## FAQ
+## Credits
 
-<p><details>
-  <summary><b>Where can I find the service worker file?</b></summary>
-
-  The service worker file is generated automatically. The implementation can be found under [`src/registerServiceWorker.js`](https://github.com/gothinkster/vue-realworld-example-app/blob/eeaeb34fa440d00cd400545301ea203bd2a59284/src/registerServiceWorker.js). You can find the dependencies implementation in this repo: [yyx990803/register-service-worker](https://github.com/yyx990803/register-service-worker#readme).
-
-  Also, Google provided a good documentation on how to register a service worker: https://developers.google.com/web/fundamentals/primers/service-workers/registration
-</details></p>
-
-<p><details>
-  <summary><b>Vue.js Function API / Migration to Vue.js 3</b></summary>
-
-  Related resources:
-
-  - [Vue.js Function API RFC](https://github.com/vuejs/rfcs/blob/function-apis/active-rfcs/0000-function-api.md)
-  - [`vue-function-api` plugin](https://github.com/vuejs/vue-function-api)
-
-  Vue.js 3 will likely introduce breaking changes on how Vue.js applications will look like. For example, the Vue.js Function API might be introduced. This would cause a lot of our components to change in the overall structure. The changes would be minimal though. With the `vue-function-api` plugin, these changes could be applied already. The problem is that multiple integrations are not working with the plugin. There are intentions to make this work, but for the time being, we should rather focus on different areas. If you still want to be experimental with it, we are happy to get a Pull Request with some experimental feature implementations.
-</details></p>
-
-## Connect
-
-Join us on [Discord](https://discord.gg/NE2jNmg)
+Originally created by [Emmanuel Vilsbol](https://github.com/vilsbole) and the [gothinkster/vue-realworld-example-app](https://github.com/gothinkster/vue-realworld-example-app) contributors. See the [RealWorld project](https://github.com/realworld-apps/realworld) for the spec, and [CodebaseShow](https://codebase.show/projects/realworld) for the same app built with other stacks.
