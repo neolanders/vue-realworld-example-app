@@ -21,6 +21,7 @@
   "name": "realworld-vue",
   "scripts": {
     "build": "vite build",
+    "format": "prettier --write \"src/**/*.{js,vue}\"",
     "lint": "eslint --ext .js,.vue src",
     "preview": "vite preview",
     "serve": "vite",
