@@ -15,7 +15,7 @@ If your company runs an existing Vue 2 application that cannot migrate yet, [Her
 ## Stack
 
 - [Vue 2.7](https://v2.vuejs.org/) with [Vuex 3](https://v3.vuex.vuejs.org/) and [Vue Router 3](https://v3.router.vuejs.org/)
-- [Vite 5](https://vitejs.dev/) (via `@vitejs/plugin-vue2`) for dev server and builds
+- [Vite 7](https://vitejs.dev/) (via `@vitejs/plugin-vue2`) for dev server and builds
 - [Bun](https://bun.sh/) as package manager / script runner
 - [Playwright](https://playwright.dev/) running the official [RealWorld e2e test suite](https://github.com/realworld-apps/realworld), vendored as the `realworld` git submodule
 - [marked](https://marked.js.org/) + [DOMPurify](https://github.com/cure53/DOMPurify) for safe markdown rendering, [date-fns](https://date-fns.org/) for dates

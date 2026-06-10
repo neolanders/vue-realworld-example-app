@@ -19,7 +19,7 @@ async function request(method, path, body) {
   const response = await fetch(`${API_URL}/${path}`, options);
 
   // 204s and malformed payloads both yield null data rather than throwing.
-  let data = null;
+  let data;
   try {
     data = await response.json();
   } catch {
