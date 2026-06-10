@@ -20,11 +20,20 @@ let authResolved = false;
 router.beforeEach((to, from, next) =>
   Promise.all([store.dispatch(CHECK_AUTH)]).then(() => {
     authResolved = true;
-    next();
+    // Auth-gated routes are only decided once the auth check has resolved,
+    // so an invalid token redirects away instead of showing a broken page.
+    const needsAuth =
+      (to.meta && to.meta.requiresAuth) ||
+      (to.path === "/" && to.query.feed === "following");
+    if (needsAuth && !store.getters.isAuthenticated) {
+      next({ path: "/login" });
+    } else {
+      next();
+    }
   })
 );
 
-const app = new Vue({
+new Vue({
   router,
   store,
   render: h => h(App)
@@ -36,7 +45,7 @@ window.__conduit_debug__ = {
   },
   getAuthState: function() {
     if (!authResolved) return "loading";
-    return store.getters.isAuthenticated ? "authenticated" : "unauthenticated";
+    return store.getters.authStatus;
   },
   getCurrentUser: function() {
     if (!store.getters.isAuthenticated) return null;

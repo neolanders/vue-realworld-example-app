@@ -33,9 +33,17 @@
           >
           </RwvCommentEditor>
           <p v-else>
-            <router-link :to="{ name: 'login' }">Sign in</router-link>
+            <router-link
+              :to="{ name: 'login', query: { redirect: $route.fullPath } }"
+            >
+              Sign in
+            </router-link>
             or
-            <router-link :to="{ name: 'register' }">sign up</router-link>
+            <router-link
+              :to="{ name: 'register', query: { redirect: $route.fullPath } }"
+            >
+              sign up
+            </router-link>
             to add comments on this article.
           </p>
           <RwvComment
@@ -54,6 +62,7 @@
 <script>
 import { mapGetters } from "vuex";
 import marked from "marked";
+import DOMPurify from "dompurify";
 import store from "@/store";
 import RwvArticleMeta from "@/components/ArticleMeta";
 import RwvComment from "@/components/Comment";
@@ -88,7 +97,8 @@ export default {
   },
   methods: {
     parseMarkdown(content) {
-      return marked(content);
+      // The body comes from the API and may contain attacker-controlled HTML.
+      return DOMPurify.sanitize(marked(content));
     }
   }
 };

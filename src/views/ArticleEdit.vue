@@ -72,6 +72,7 @@
 import { mapGetters } from "vuex";
 import store from "@/store";
 import RwvListErrors from "@/components/ListErrors";
+import { extractErrors } from "@/common/errors";
 import {
   ARTICLE_PUBLISH,
   ARTICLE_EDIT,
@@ -136,9 +137,9 @@ export default {
             params: { slug: data.article.slug }
           });
         })
-        .catch(({ response }) => {
+        .catch(error => {
           this.inProgress = false;
-          this.errors = response.data.errors;
+          this.errors = extractErrors(error);
         });
     },
     removeTag(tag) {

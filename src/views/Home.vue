@@ -39,8 +39,14 @@
               </li>
             </ul>
           </div>
-          <div v-if="feedMode === 'following' && !isLoading && articles.length === 0" class="article-preview empty-feed-message">
-            Your feed is empty. <a href="/">Go to the Global Feed</a> to discover articles.
+          <div
+            v-if="
+              feedMode === 'following' && !isLoading && articles.length === 0
+            "
+            class="article-preview empty-feed-message"
+          >
+            Your feed is empty. <a href="/">Go to the Global Feed</a> to
+            discover articles.
           </div>
           <RwvArticleList
             :type="articleType"

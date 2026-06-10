@@ -1,6 +1,5 @@
 import Vue from "vue";
 import Router from "vue-router";
-import store from "@/store";
 
 Vue.use(Router);
 
@@ -65,16 +64,6 @@ const router = new Router({
   ]
 });
 
-router.beforeEach((to, from, next) => {
-  const needsAuth =
-    to.meta && to.meta.requiresAuth
-      ? true
-      : to.path === "/" && to.query.feed === "following";
-  if (needsAuth && !store.getters.isAuthenticated) {
-    next({ path: "/login" });
-  } else {
-    next();
-  }
-});
+// Auth-gated redirects live in main.js, after CHECK_AUTH has resolved.
 
 export default router;

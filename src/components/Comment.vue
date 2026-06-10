@@ -18,18 +18,27 @@
         <i class="ion-trash-a" @click="destroy(slug, comment.id)"></i>
       </span>
     </div>
+    <RwvListErrors v-if="hasErrors" :errors="errors" />
   </div>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
+import RwvListErrors from "./ListErrors.vue";
 import { COMMENT_DESTROY } from "@/store/actions.type";
+import { extractErrors } from "@/common/errors";
 
 export default {
   name: "RwvComment",
+  components: { RwvListErrors },
   props: {
     slug: { type: String, required: true },
     comment: { type: Object, required: true }
+  },
+  data() {
+    return {
+      errors: {}
+    };
   },
   computed: {
     isCurrentUser() {
@@ -43,11 +52,21 @@ export default {
         ? this.comment.author.image
         : "/default-avatar.svg";
     },
+    hasErrors() {
+      return Object.keys(this.errors).length > 0;
+    },
     ...mapGetters(["currentUser"])
   },
   methods: {
     destroy(slug, commentId) {
-      this.$store.dispatch(COMMENT_DESTROY, { slug, commentId });
+      this.$store
+        .dispatch(COMMENT_DESTROY, { slug, commentId })
+        .then(() => {
+          this.errors = {};
+        })
+        .catch(error => {
+          this.errors = extractErrors(error);
+        });
     }
   }
 };

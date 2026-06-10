@@ -5,6 +5,9 @@
         conduit
       </router-link>
       <ul v-if="!isAuthenticated" class="nav navbar-nav pull-xs-right">
+        <li v-if="isUnavailable" class="nav-item">
+          <span class="nav-link">Connecting&hellip;</span>
+        </li>
         <li class="nav-item">
           <router-link
             class="nav-link"
@@ -91,7 +94,10 @@ import { mapGetters } from "vuex";
 export default {
   name: "RwvHeader",
   computed: {
-    ...mapGetters(["currentUser", "isAuthenticated"]),
+    ...mapGetters(["currentUser", "isAuthenticated", "authStatus"]),
+    isUnavailable() {
+      return this.authStatus === "unavailable";
+    },
     userPicSrc() {
       return this.currentUser && this.currentUser.image
         ? this.currentUser.image

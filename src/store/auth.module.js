@@ -1,5 +1,6 @@
 import ApiService from "@/common/api.service";
 import JwtService from "@/common/jwt.service";
+import { extractErrors } from "@/common/errors";
 import {
   LOGIN,
   LOGOUT,
@@ -7,12 +8,19 @@ import {
   CHECK_AUTH,
   UPDATE_USER
 } from "./actions.type";
-import { SET_AUTH, PURGE_AUTH, SET_ERROR } from "./mutations.type";
+import {
+  SET_AUTH,
+  SET_AUTH_UNAVAILABLE,
+  PURGE_AUTH,
+  SET_ERROR
+} from "./mutations.type";
 
 const state = {
   errors: null,
   user: {},
-  isAuthenticated: !!JwtService.getToken()
+  isAuthenticated: !!JwtService.getToken(),
+  // 'authenticated' | 'unauthenticated' | 'unavailable'
+  authStatus: JwtService.getToken() ? "authenticated" : "unauthenticated"
 };
 
 const getters = {
@@ -21,6 +29,9 @@ const getters = {
   },
   isAuthenticated(state) {
     return state.isAuthenticated;
+  },
+  authStatus(state) {
+    return state.authStatus;
   }
 };
 
@@ -33,11 +44,7 @@ const actions = {
           resolve(data);
         })
         .catch(error => {
-          const errs =
-            error && error.response && error.response.data && error.response.data.errors
-              ? error.response.data.errors
-              : { "network error": ["unable to reach server"] };
-          context.commit(SET_ERROR, errs);
+          context.commit(SET_ERROR, extractErrors(error));
           reject(error);
         });
     });
@@ -53,11 +60,7 @@ const actions = {
           resolve(data);
         })
         .catch(error => {
-          const errs =
-            error && error.response && error.response.data && error.response.data.errors
-              ? error.response.data.errors
-              : { "network error": ["unable to reach server"] };
-          context.commit(SET_ERROR, errs);
+          context.commit(SET_ERROR, extractErrors(error));
           reject(error);
         });
     });
@@ -67,13 +70,23 @@ const actions = {
       ApiService.setHeader();
       return ApiService.get("user")
         .then(({ data }) => {
-          context.commit(SET_AUTH, data.user);
+          if (data && data.user) {
+            context.commit(SET_AUTH, data.user);
+          } else {
+            // 2XX without a parsable user payload (empty body, malformed
+            // JSON): treat the server as unavailable but keep the token.
+            context.commit(SET_AUTH_UNAVAILABLE);
+          }
         })
         .catch(error => {
-          const status =
-            error && error.response && error.response.status;
-          if (status === 401 || status === 403) {
+          const status = error && error.response && error.response.status;
+          if (status >= 400 && status < 500) {
+            // The token was rejected: clear it and show the logged-out UI.
             context.commit(PURGE_AUTH);
+          } else {
+            // 5XX or network failure: the token may still be valid, so keep
+            // it and let the user browse in degraded mode.
+            context.commit(SET_AUTH_UNAVAILABLE);
           }
         });
     } else {
@@ -106,12 +119,19 @@ const mutations = {
   },
   [SET_AUTH](state, user) {
     state.isAuthenticated = true;
+    state.authStatus = "authenticated";
     state.user = user;
     state.errors = {};
     JwtService.saveToken(state.user.token);
   },
+  [SET_AUTH_UNAVAILABLE](state) {
+    state.isAuthenticated = false;
+    state.authStatus = "unavailable";
+    state.user = {};
+  },
   [PURGE_AUTH](state) {
     state.isAuthenticated = false;
+    state.authStatus = "unauthenticated";
     state.user = {};
     state.errors = {};
     JwtService.destroyToken();

@@ -12,7 +12,7 @@
         </textarea>
       </div>
       <div class="card-footer">
-        <img :src="userImage" class="comment-author-img" />
+        <img :src="userImageSrc" class="comment-author-img" />
         <button class="btn btn-sm btn-primary">Post Comment</button>
       </div>
     </form>
@@ -22,6 +22,7 @@
 <script>
 import RwvListErrors from "./ListErrors.vue";
 import { COMMENT_CREATE } from "../store/actions.type.js";
+import { extractErrors } from "../common/errors";
 
 export default {
   name: "RwvCommentEditor",
@@ -37,6 +38,11 @@ export default {
       errors: {}
     };
   },
+  computed: {
+    userImageSrc() {
+      return this.userImage || "/default-avatar.svg";
+    }
+  },
   methods: {
     onSubmit(slug, comment) {
       this.$store
@@ -45,8 +51,8 @@ export default {
           this.comment = null;
           this.errors = {};
         })
-        .catch(({ response }) => {
-          this.errors = response.data.errors;
+        .catch(error => {
+          this.errors = extractErrors(error);
         });
     }
   }

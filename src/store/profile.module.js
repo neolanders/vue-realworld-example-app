@@ -1,34 +1,49 @@
 import ApiService from "@/common/api.service";
+import { extractErrors } from "@/common/errors";
 import {
   FETCH_PROFILE,
   FETCH_PROFILE_FOLLOW,
   FETCH_PROFILE_UNFOLLOW
 } from "./actions.type";
-import { SET_PROFILE } from "./mutations.type";
+import { SET_PROFILE, SET_PROFILE_ERROR } from "./mutations.type";
 
 const state = {
   errors: {},
   profile: {}
 };
 
+const PROFILE_FETCH_RETRIES = 2;
+const PROFILE_FETCH_RETRY_DELAY = 400;
+
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 const getters = {
   profile(state) {
     return state.profile;
+  },
+  profileErrors(state) {
+    return state.errors;
   }
 };
 
 const actions = {
-  [FETCH_PROFILE](context, payload) {
+  async [FETCH_PROFILE](context, payload) {
     const { username } = payload;
-    return ApiService.get("profiles", username)
-      .then(({ data }) => {
+    // Profiles can be briefly missing right after registration on an
+    // eventually-consistent backend, so retry before declaring an error.
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const { data } = await ApiService.get("profiles", username);
         context.commit(SET_PROFILE, data.profile);
         return data;
-      })
-      .catch(() => {
-        // #todo SET_ERROR cannot work in multiple states
-        // context.commit(SET_ERROR, response.data.errors)
-      });
+      } catch (error) {
+        if (attempt >= PROFILE_FETCH_RETRIES) {
+          context.commit(SET_PROFILE_ERROR, extractErrors(error));
+          return;
+        }
+        await delay(PROFILE_FETCH_RETRY_DELAY);
+      }
+    }
   },
   [FETCH_PROFILE_FOLLOW](context, payload) {
     const { username } = payload;
@@ -38,8 +53,7 @@ const actions = {
         return data;
       })
       .catch(() => {
-        // #todo SET_ERROR cannot work in multiple states
-        // context.commit(SET_ERROR, response.data.errors)
+        // Leave the profile as-is; the follow button simply stays unchanged.
       });
   },
   [FETCH_PROFILE_UNFOLLOW](context, payload) {
@@ -50,19 +64,19 @@ const actions = {
         return data;
       })
       .catch(() => {
-        // #todo SET_ERROR cannot work in multiple states
-        // context.commit(SET_ERROR, response.data.errors)
+        // Leave the profile as-is; the unfollow button simply stays unchanged.
       });
   }
 };
 
 const mutations = {
-  // [SET_ERROR] (state, error) {
-  //   state.errors = error
-  // },
   [SET_PROFILE](state, profile) {
     state.profile = profile;
     state.errors = {};
+  },
+  [SET_PROFILE_ERROR](state, errors) {
+    state.profile = {};
+    state.errors = errors;
   }
 };
 

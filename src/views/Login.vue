@@ -57,14 +57,22 @@ export default {
     onSubmit(email, password) {
       this.$store
         .dispatch(LOGIN, { email, password })
-        .then(() => this.$router.push({ name: "home" }))
+        .then(() => this.$router.push(this.postAuthRoute))
         .catch(() => {});
     }
   },
   computed: {
     ...mapState({
       errors: state => state.auth.errors
-    })
+    }),
+    postAuthRoute() {
+      const redirect = this.$route.query.redirect;
+      // Only allow same-app paths to avoid open redirects.
+      if (typeof redirect === "string" && redirect.startsWith("/")) {
+        return redirect;
+      }
+      return { name: "home" };
+    }
   }
 };
 </script>

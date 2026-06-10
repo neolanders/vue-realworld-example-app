@@ -66,7 +66,15 @@ export default {
   computed: {
     ...mapState({
       errors: state => state.auth.errors
-    })
+    }),
+    postAuthRoute() {
+      const redirect = this.$route.query.redirect;
+      // Only allow same-app paths to avoid open redirects.
+      if (typeof redirect === "string" && redirect.startsWith("/")) {
+        return redirect;
+      }
+      return { name: "home" };
+    }
   },
   methods: {
     onSubmit() {
@@ -76,7 +84,7 @@ export default {
           password: this.password,
           username: this.username
         })
-        .then(() => this.$router.push({ name: "home" }))
+        .then(() => this.$router.push(this.postAuthRoute))
         .catch(() => {});
     }
   }

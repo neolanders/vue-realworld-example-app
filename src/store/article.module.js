@@ -22,6 +22,8 @@ import {
   RESET_STATE,
   SET_ARTICLE,
   SET_COMMENTS,
+  ADD_COMMENT,
+  REMOVE_COMMENT,
   TAG_ADD,
   TAG_REMOVE,
   UPDATE_ARTICLE_IN_LIST
@@ -56,12 +58,18 @@ export const actions = {
     return data.comments;
   },
   async [COMMENT_CREATE](context, payload) {
-    await CommentsService.post(payload.slug, payload.comment);
-    context.dispatch(FETCH_COMMENTS, payload.slug);
+    const { data } = await CommentsService.post(payload.slug, payload.comment);
+    if (data && data.comment) {
+      context.commit(ADD_COMMENT, data.comment);
+    } else {
+      await context.dispatch(FETCH_COMMENTS, payload.slug);
+    }
   },
   async [COMMENT_DESTROY](context, payload) {
+    // Any 2XX from the server means the comment is gone; update local state
+    // directly instead of refetching.
     await CommentsService.destroy(payload.slug, payload.commentId);
-    context.dispatch(FETCH_COMMENTS, payload.slug);
+    context.commit(REMOVE_COMMENT, payload.commentId);
   },
   async [FAVORITE_ADD](context, slug) {
     const { data } = await FavoriteService.add(slug);
@@ -101,6 +109,12 @@ export const mutations = {
   },
   [SET_COMMENTS](state, comments) {
     state.comments = comments;
+  },
+  [ADD_COMMENT](state, comment) {
+    state.comments = state.comments.concat([comment]);
+  },
+  [REMOVE_COMMENT](state, commentId) {
+    state.comments = state.comments.filter(c => c.id !== commentId);
   },
   [TAG_ADD](state, tag) {
     state.article.tagList = state.article.tagList.concat([tag]);

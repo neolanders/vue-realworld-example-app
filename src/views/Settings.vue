@@ -4,6 +4,7 @@
       <div class="row">
         <div class="col-md-6 offset-md-3 col-xs-12">
           <h1 class="text-xs-center">Your Settings</h1>
+          <RwvListErrors v-if="hasErrors" :errors="errors" />
           <form @submit.prevent="updateSettings()">
             <fieldset>
               <fieldset class="form-group">
@@ -51,7 +52,10 @@
                   placeholder="Password"
                 />
               </fieldset>
-              <button type="submit" class="btn btn-lg btn-primary pull-xs-right">
+              <button
+                type="submit"
+                class="btn btn-lg btn-primary pull-xs-right"
+              >
                 Update Settings
               </button>
             </fieldset>
@@ -68,12 +72,16 @@
 
 <script>
 import { mapGetters } from "vuex";
+import RwvListErrors from "@/components/ListErrors";
 import { LOGOUT, UPDATE_USER } from "@/store/actions.type";
+import { extractErrors } from "@/common/errors";
 
 export default {
   name: "RwvSettings",
+  components: { RwvListErrors },
   data() {
     return {
+      errors: {},
       form: {
         username: "",
         email: "",
@@ -84,7 +92,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["currentUser"])
+    ...mapGetters(["currentUser"]),
+    hasErrors() {
+      return Object.keys(this.errors).length > 0;
+    }
   },
   mounted() {
     this.syncFromUser();
@@ -110,12 +121,18 @@ export default {
         image: this.form.image
       };
       if (this.form.password) payload.password = this.form.password;
-      this.$store.dispatch(UPDATE_USER, payload).then(() => {
-        this.$router.push({
-          name: "profile",
-          params: { username: this.form.username }
+      this.$store
+        .dispatch(UPDATE_USER, payload)
+        .then(() => {
+          this.errors = {};
+          this.$router.push({
+            name: "profile",
+            params: { username: this.form.username }
+          });
+        })
+        .catch(error => {
+          this.errors = extractErrors(error);
         });
-      });
     },
     logout() {
       this.$store.dispatch(LOGOUT).then(() => {
