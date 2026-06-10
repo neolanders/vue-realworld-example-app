@@ -1,3 +1,7 @@
+// Shared RealWorld theme (Conduit Minimal CSS), sourced from the spec
+// submodule so it can't drift from the templates/selectors contract.
+import "../realworld/assets/theme/styles.css";
+
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
