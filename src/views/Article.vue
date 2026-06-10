@@ -85,14 +85,12 @@ export default {
     RwvCommentEditor,
     RwvTag
   },
-  beforeRouteEnter(to, from, next) {
+  async beforeRouteEnter(to) {
     const articleStore = useArticleStore(pinia);
-    Promise.all([
+    await Promise.all([
       articleStore.fetchArticle(to.params.slug).catch(() => null),
       articleStore.fetchComments(to.params.slug).catch(() => null)
-    ]).then(() => {
-      next();
-    });
+    ]);
   },
   computed: {
     ...mapState(useArticleStore, ["article", "comments"]),

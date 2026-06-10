@@ -78,24 +78,21 @@ import { extractErrors } from "@/common/errors";
 export default {
   name: "RwvArticleEdit",
   components: { RwvListErrors },
-  async beforeRouteUpdate(to, from, next) {
+  beforeRouteUpdate() {
     // Reset state if user goes from /editor/:id to /editor
     // The component is not recreated so we use the hook to reset the state.
     useArticleStore(pinia).$reset();
-    return next();
   },
-  async beforeRouteEnter(to, from, next) {
+  async beforeRouteEnter(to) {
     // If we arrive directly at this url, we need to fetch the article
     const articleStore = useArticleStore(pinia);
     articleStore.$reset();
     if (to.params.slug !== undefined) {
       await articleStore.fetchArticle(to.params.slug);
     }
-    return next();
   },
-  async beforeRouteLeave(to, from, next) {
+  beforeRouteLeave() {
     useArticleStore(pinia).$reset();
-    next();
   },
   data() {
     return {
