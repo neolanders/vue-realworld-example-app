@@ -43,35 +43,30 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
+import type { RouteLocationRaw } from "vue-router";
 import { useAuthStore } from "@/store/auth";
 import { formatError } from "@/common/format";
-
 defineOptions({ name: "RwvLogin" });
-
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const { errors } = storeToRefs(authStore);
-
-const email = ref(null);
-const password = ref(null);
-
-const postAuthRoute = computed(() => {
+const email = ref("");
+const password = ref("");
+const postAuthRoute = computed((): RouteLocationRaw => {
   const redirect = route.query.redirect;
-  // Only allow same-app paths to avoid open redirects.
   if (typeof redirect === "string" && redirect.startsWith("/")) {
     return redirect;
   }
   return { name: "home" };
 });
-
-const onSubmit = (email, password) => {
+const onSubmit = (emailValue: string, passwordValue: string) => {
   authStore
-    .login({ email, password })
+    .login({ email: emailValue, password: passwordValue })
     .then(() => router.push(postAuthRoute.value))
     .catch(() => {});
 };
