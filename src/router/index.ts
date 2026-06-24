@@ -6,56 +6,56 @@ const router = createRouter({
     {
       name: "home",
       path: "/",
-      component: () => import("@/views/Home")
+      component: () => import("@/views/Home.vue")
     },
     {
       name: "home-tag",
       path: "/tag/:tag",
-      component: () => import("@/views/Home")
+      component: () => import("@/views/Home.vue")
     },
     {
       name: "login",
       path: "/login",
-      component: () => import("@/views/Login")
+      component: () => import("@/views/Login.vue")
     },
     {
       name: "register",
       path: "/register",
-      component: () => import("@/views/Register")
+      component: () => import("@/views/Register.vue")
     },
     {
       name: "settings",
       path: "/settings",
-      component: () => import("@/views/Settings"),
+      component: () => import("@/views/Settings.vue"),
       meta: { requiresAuth: true }
     },
     {
       name: "profile",
       path: "/profile/:username",
-      component: () => import("@/views/Profile")
+      component: () => import("@/views/Profile.vue")
     },
     {
       name: "profile-favorites",
       path: "/profile/:username/favorites",
-      component: () => import("@/views/Profile")
+      component: () => import("@/views/Profile.vue")
     },
     {
       name: "article",
       path: "/article/:slug",
-      component: () => import("@/views/Article"),
+      component: () => import("@/views/Article.vue"),
       props: true
     },
     {
       name: "editor-new",
       path: "/editor",
-      component: () => import("@/views/ArticleEdit"),
+      component: () => import("@/views/ArticleEdit.vue"),
       meta: { requiresAuth: true }
     },
     {
       name: "article-edit",
       path: "/editor/:slug",
       props: true,
-      component: () => import("@/views/ArticleEdit"),
+      component: () => import("@/views/ArticleEdit.vue"),
       meta: { requiresAuth: true }
     }
   ]

@@ -68,52 +68,45 @@
     </div>
   </div>
 </template>
-
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/store/auth";
 import { useHomeStore } from "@/store/home";
-import RwvTag from "@/components/VTag";
-import RwvArticleList from "@/components/ArticleList";
-
+import RwvTag from "@/components/VTag.vue";
+import RwvArticleList from "@/components/ArticleList.vue";
 defineOptions({ name: "RwvHome" });
-
+type FeedMode = "following" | "global" | "tag";
 const route = useRoute();
 const router = useRouter();
 const homeStore = useHomeStore();
 const { isAuthenticated } = storeToRefs(useAuthStore());
 const { tags, isLoading, articles } = storeToRefs(homeStore);
-
 onMounted(() => {
-  // Missing tags only leave the sidebar empty; never crash the home page.
   homeStore.fetchTags().catch(() => {});
 });
-
-const tag = computed(() => route.params.tag);
-
-const feedMode = computed(() => {
+const tag = computed(() => {
+  const value = route.params.tag;
+  return typeof value === "string" ? value : undefined;
+});
+const feedMode = computed((): FeedMode => {
   if (tag.value) return "tag";
   if (route.query.feed === "following") return "following";
   return "global";
 });
-
 const articleType = computed(() =>
   feedMode.value === "following" ? "feed" : "all"
 );
-
 const currentPage = computed(() => {
-  const p = parseInt(route.query.page, 10);
+  const p = Number.parseInt(String(route.query.page ?? ""), 10);
   return p > 0 ? p : 1;
 });
-
-const goTo = (query) => {
+const goTo = (query: Record<string, string>) => {
   router.push({ path: "/", query });
 };
-
-const onPageChange = (page) => {
-  const query = { ...route.query };
+const onPageChange = (page: number) => {
+  const query = { ...route.query } as Record<string, string | undefined>;
   if (page > 1) {
     query.page = String(page);
   } else {

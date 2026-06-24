@@ -1,21 +1,46 @@
 import { defineStore } from "pinia";
-import ApiService from "@/common/api.service";
+import ApiService, { type ApiRequestError } from "@/common/api.service";
 import JwtService from "@/common/jwt.service";
 import { extractErrors } from "@/common/errors";
 
+import type { User, AuthStatus, ApiErrors, UserResponse } from "@/types/realworld";
+
+interface AuthState {
+  errors: ApiErrors;
+  user: Partial<User>;
+  isAuthenticated: boolean;
+  authStatus: AuthStatus;
+}
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+interface RegisterCredentials extends LoginCredentials {
+  username: string;
+}
+
+interface UpdateUserPayload {
+  email: string;
+  username: string;
+  password?: string;
+  image: string | null;
+  bio: string | null;
+}
+
 export const useAuthStore = defineStore("auth", {
-  state: () => ({
+  state: (): AuthState => ({
     errors: null,
     user: {},
     isAuthenticated: !!JwtService.getToken(),
-    // 'authenticated' | 'unauthenticated' | 'unavailable'
     authStatus: JwtService.getToken() ? "authenticated" : "unauthenticated"
   }),
   getters: {
     currentUser: (state) => state.user
   },
   actions: {
-    setAuth(user) {
+    setAuth(user: User) {
       this.isAuthenticated = true;
       this.authStatus = "authenticated";
       this.user = user;
@@ -34,9 +59,9 @@ export const useAuthStore = defineStore("auth", {
       this.errors = {};
       JwtService.destroyToken();
     },
-    async login(credentials) {
+    async login(credentials: LoginCredentials) {
       try {
-        const { data } = await ApiService.post("users/login", {
+        const { data } = await ApiService.post<UserResponse>("users/login", {
           user: credentials
         });
         this.setAuth(data.user);
@@ -49,9 +74,11 @@ export const useAuthStore = defineStore("auth", {
     logout() {
       this.purgeAuth();
     },
-    async register(credentials) {
+    async register(credentials: RegisterCredentials) {
       try {
-        const { data } = await ApiService.post("users", { user: credentials });
+        const { data } = await ApiService.post<UserResponse>("users", {
+          user: credentials
+        });
         this.setAuth(data.user);
         return data;
       } catch (error) {
@@ -65,17 +92,17 @@ export const useAuthStore = defineStore("auth", {
         return;
       }
       try {
-        const { data } = await ApiService.get("user");
-        if (data && data.user) {
+        const { data } = await ApiService.get<UserResponse>("user");
+        if (data?.user) {
           this.setAuth(data.user);
         } else {
           // 2XX without a parsable user payload (empty body, malformed
           // JSON): treat the server as unavailable but keep the token.
           this.setAuthUnavailable();
         }
-      } catch (error) {
-        const status = error && error.response && error.response.status;
-        if (status >= 400 && status < 500) {
+      } catch (error: unknown) {
+        const status = (error as ApiRequestError).response?.status;
+        if (status && status >= 400 && status < 500) {
           // The token was rejected: clear it and show the logged-out UI.
           this.purgeAuth();
         } else {
@@ -85,9 +112,9 @@ export const useAuthStore = defineStore("auth", {
         }
       }
     },
-    async updateUser(payload) {
+    async updateUser(payload: UpdateUserPayload) {
       const { email, username, password, image, bio } = payload;
-      const user = {
+      const user: UpdateUserPayload = {
         email,
         username,
         bio,
@@ -97,7 +124,7 @@ export const useAuthStore = defineStore("auth", {
         user.password = password;
       }
 
-      const { data } = await ApiService.put("user", { user });
+      const { data } = await ApiService.put<UserResponse>("user", { user });
       this.setAuth(data.user);
       return data;
     }

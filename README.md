@@ -73,3 +73,8 @@ These are complementary, not alternatives: Prettier only formats, while `eslint-
 ## Credits
 
 Originally created by [Emmanuel Vilsbol](https://github.com/vilsbole) and the [gothinkster/vue-realworld-example-app](https://github.com/gothinkster/vue-realworld-example-app) contributors. See the [RealWorld project](https://github.com/realworld-apps/realworld) for the spec, and [CodebaseShow](https://codebase.show/projects/realworld) for the same app built with other stacks.
+
+
+
+
+##### neolanders@hotmail.com / 12345
