@@ -84,11 +84,9 @@
 
 <script setup>
 import { computed } from "vue";
-import { storeToRefs } from "pinia";
-import { useAuthStore } from "@/store/auth";
+import { useAuth } from "@/composables/useAuth";
 
-const { currentUser, isAuthenticated, authStatus } =
-  storeToRefs(useAuthStore());
+const { currentUser, isAuthenticated, authStatus } = useAuth();
 
 const isUnavailable = computed(() => authStatus.value === "unavailable");
 

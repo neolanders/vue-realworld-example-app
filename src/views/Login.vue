@@ -45,16 +45,14 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import type { RouteLocationRaw } from "vue-router";
-import { useAuthStore } from "@/store/auth";
+import { useAuth } from "@/composables/useAuth";
 import { formatError } from "@/common/format";
 defineOptions({ name: "RwvLogin" });
 const route = useRoute();
 const router = useRouter();
-const authStore = useAuthStore();
-const { errors } = storeToRefs(authStore);
+const { authStore, errors } = useAuth();
 const email = ref("");
 const password = ref("");
 const postAuthRoute = computed((): RouteLocationRaw => {

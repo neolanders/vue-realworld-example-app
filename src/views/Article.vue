@@ -82,7 +82,7 @@ import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-import { useAuthStore } from "@/store/auth";
+import { useAuth } from "@/composables/useAuth";
 import RwvArticleMeta from "@/components/ArticleMeta";
 import RwvComment from "@/components/Comment";
 import RwvCommentEditor from "@/components/CommentEditor";
@@ -97,7 +97,7 @@ defineProps({
 
 const route = useRoute();
 const { article, comments } = storeToRefs(useArticleStore());
-const { currentUser, isAuthenticated } = storeToRefs(useAuthStore());
+const { currentUser, isAuthenticated } = useAuth();
 
 const parseMarkdown = (content) => {
   // The body comes from the API and may contain attacker-controlled HTML.

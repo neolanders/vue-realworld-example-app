@@ -37,9 +37,7 @@
 
 <script setup>
 import { computed } from "vue";
-import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
-import { useAuthStore } from "@/store/auth";
+import { useAuth } from "@/composables/useAuth";
 import { useArticleStore } from "@/store/article";
 import { formatDate } from "@/common/format";
 import RwvArticleActions from "@/components/ArticleActions";
@@ -56,9 +54,8 @@ const props = defineProps({
   }
 });
 
-const router = useRouter();
 const articleStore = useArticleStore();
-const { currentUser, isAuthenticated } = storeToRefs(useAuthStore());
+const { currentUser, requireAuth } = useAuth();
 
 const authorImage = computed(() =>
   props.article.author && props.article.author.image
@@ -81,10 +78,7 @@ const isCurrentUser = () => {
 };
 
 const toggleFavorite = () => {
-  if (!isAuthenticated.value) {
-    router.push({ name: "login" });
-    return;
-  }
+  if (!requireAuth()) return;
   if (props.article.favorited) {
     articleStore.removeFavorite(props.article.slug);
   } else {

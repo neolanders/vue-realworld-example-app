@@ -92,8 +92,9 @@
 <script setup>
 import { computed, onMounted, watch } from "vue";
 import { storeToRefs } from "pinia";
-import { useRoute, useRouter } from "vue-router";
-import { useAuthStore } from "@/store/auth";
+import { useRoute } from "vue-router";
+import { useAuth } from "@/composables/useAuth";
+import { usePagination } from "@/composables/usePagination";
 import { useProfileStore } from "@/store/profile";
 import RwvArticleList from "@/components/ArticleList";
 
@@ -102,9 +103,9 @@ const DEFAULT_AVATAR = "/default-avatar.svg";
 defineOptions({ name: "RwvProfile" });
 
 const route = useRoute();
-const router = useRouter();
 const profileStore = useProfileStore();
-const { currentUser, isAuthenticated } = storeToRefs(useAuthStore());
+const { currentUser, requireAuth } = useAuth();
+const { currentPage, onPageChange } = usePagination();
 const { profile, errors: profileErrors } = storeToRefs(profileStore);
 
 onMounted(() => profileStore.fetchProfile(route.params));
@@ -124,11 +125,6 @@ const username = computed(() => route.params.username);
 
 const showFavorited = computed(() => route.name === "profile-favorites");
 
-const currentPage = computed(() => {
-  const p = parseInt(route.query.page, 10);
-  return p > 0 ? p : 1;
-});
-
 const avatarUrl = computed(() =>
   profile.value && profile.value.image ? profile.value.image : DEFAULT_AVATAR
 );
@@ -141,18 +137,11 @@ const isCurrentUser = () => {
 };
 
 const follow = () => {
-  if (!isAuthenticated.value) return;
+  if (!requireAuth()) return;
   profileStore.follow(route.params);
 };
 
 const unfollow = () => {
   profileStore.unfollow(route.params);
-};
-
-const onPageChange = (page) => {
-  const query = { ...route.query };
-  if (page > 1) query.page = String(page);
-  else delete query.page;
-  router.push({ path: route.path, query });
 };
 </script>

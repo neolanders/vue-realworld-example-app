@@ -32,7 +32,7 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "@/store/auth";
+import { useAuth } from "@/composables/useAuth";
 import { useArticleStore } from "@/store/article";
 import { useProfileStore } from "@/store/profile";
 
@@ -45,7 +45,7 @@ const router = useRouter();
 const articleStore = useArticleStore();
 const profileStore = useProfileStore();
 const { profile } = storeToRefs(profileStore);
-const { isAuthenticated } = storeToRefs(useAuthStore());
+const { requireAuth } = useAuth();
 
 const editArticleLink = computed(() => ({
   name: "article-edit",
@@ -71,10 +71,7 @@ const favoriteArticleLabel = computed(() =>
 const favoriteCounter = computed(() => `(${props.article.favoritesCount})`);
 
 const toggleFavorite = () => {
-  if (!isAuthenticated.value) {
-    router.push({ name: "login" });
-    return;
-  }
+  if (!requireAuth()) return;
   if (props.article.favorited) {
     articleStore.removeFavorite(props.article.slug);
   } else {
@@ -83,10 +80,7 @@ const toggleFavorite = () => {
 };
 
 const toggleFollow = () => {
-  if (!isAuthenticated.value) {
-    router.push({ name: "login" });
-    return;
-  }
+  if (!requireAuth()) return;
   if (props.article.following) {
     profileStore.unfollow({ username: profile.value.username });
   } else {

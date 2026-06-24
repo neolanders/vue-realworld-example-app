@@ -24,8 +24,7 @@
 
 <script setup>
 import { computed, ref } from "vue";
-import { storeToRefs } from "pinia";
-import { useAuthStore } from "@/store/auth";
+import { useAuth } from "@/composables/useAuth";
 import { useArticleStore } from "@/store/article";
 import { formatDate } from "@/common/format";
 import RwvListErrors from "./ListErrors.vue";
@@ -39,7 +38,7 @@ const props = defineProps({
 defineOptions({ name: "RwvComment" });
 
 const articleStore = useArticleStore();
-const { currentUser } = storeToRefs(useAuthStore());
+const { currentUser } = useAuth();
 
 const errors = ref({});
 

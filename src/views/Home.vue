@@ -72,7 +72,8 @@
 import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
-import { useAuthStore } from "@/store/auth";
+import { useAuth } from "@/composables/useAuth";
+import { usePagination } from "@/composables/usePagination";
 import { useHomeStore } from "@/store/home";
 import RwvTag from "@/components/VTag.vue";
 import RwvArticleList from "@/components/ArticleList.vue";
@@ -81,7 +82,8 @@ type FeedMode = "following" | "global" | "tag";
 const route = useRoute();
 const router = useRouter();
 const homeStore = useHomeStore();
-const { isAuthenticated } = storeToRefs(useAuthStore());
+const { isAuthenticated } = useAuth();
+const { currentPage, onPageChange } = usePagination();
 const { tags, isLoading, articles } = storeToRefs(homeStore);
 onMounted(() => {
   homeStore.fetchTags().catch(() => {});
@@ -98,20 +100,7 @@ const feedMode = computed((): FeedMode => {
 const articleType = computed(() =>
   feedMode.value === "following" ? "feed" : "all"
 );
-const currentPage = computed(() => {
-  const p = Number.parseInt(String(route.query.page ?? ""), 10);
-  return p > 0 ? p : 1;
-});
 const goTo = (query: Record<string, string>) => {
   router.push({ path: "/", query });
-};
-const onPageChange = (page: number) => {
-  const query = { ...route.query } as Record<string, string | undefined>;
-  if (page > 1) {
-    query.page = String(page);
-  } else {
-    delete query.page;
-  }
-  router.push({ path: route.path, query });
 };
 </script>
