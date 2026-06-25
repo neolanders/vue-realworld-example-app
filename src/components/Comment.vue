@@ -25,13 +25,13 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useAuth } from "@/composables/useAuth";
+import { useArticleSlug } from "@/composables/useArticlePage";
 import { useArticleStore } from "@/store/article";
 import { formatDate } from "@/common/format";
 import RwvListErrors from "./ListErrors.vue";
 import { extractErrors } from "@/common/errors";
 
 const props = defineProps({
-  slug: { type: String, required: true },
   comment: { type: Object, required: true }
 });
 
@@ -39,6 +39,7 @@ defineOptions({ name: "RwvComment" });
 
 const articleStore = useArticleStore();
 const { currentUser } = useAuth();
+const slug = useArticleSlug();
 
 const errors = ref({});
 
@@ -57,9 +58,9 @@ const authorImage = computed(() =>
 
 const hasErrors = computed(() => Object.keys(errors.value).length > 0);
 
-const destroy = (slug, commentId) => {
+const destroy = (articleSlug, commentId) => {
   articleStore
-    .destroyComment({ slug, commentId })
+    .destroyComment({ slug: articleSlug, commentId })
     .then(() => {
       errors.value = {};
     })

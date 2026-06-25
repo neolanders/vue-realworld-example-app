@@ -28,7 +28,6 @@
         <div class="col-xs-12 col-md-8 offset-md-2">
           <RwvCommentEditor
             v-if="isAuthenticated"
-            :slug="slug"
             :userImage="currentUser.image"
           >
           </RwvCommentEditor>
@@ -48,7 +47,6 @@
           </p>
           <RwvComment
             v-for="(comment, index) in comments"
-            :slug="slug"
             :comment="comment"
             :key="index"
           >
@@ -78,22 +76,26 @@ export default {
 </script>
 
 <script setup>
+import { toRef } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import { useAuth } from "@/composables/useAuth";
+import { provideArticleSlug } from "@/composables/useArticlePage";
 import RwvArticleMeta from "@/components/ArticleMeta";
 import RwvComment from "@/components/Comment";
 import RwvCommentEditor from "@/components/CommentEditor";
 import RwvTag from "@/components/VTag";
 
-defineProps({
+const props = defineProps({
   slug: {
     type: String,
     required: true
   }
 });
+
+provideArticleSlug(toRef(props, "slug"));
 
 const route = useRoute();
 const { article, comments } = storeToRefs(useArticleStore());

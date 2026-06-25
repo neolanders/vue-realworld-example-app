@@ -21,26 +21,27 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import { useArticleSlug } from "@/composables/useArticlePage";
 import { useArticleStore } from "@/store/article";
 import RwvListErrors from "./ListErrors.vue";
 import { extractErrors } from "@/common/errors";
 
 const props = defineProps({
-  slug: { type: String, required: true },
   content: { type: String, required: false },
   userImage: { type: String, required: false }
 });
 
 const articleStore = useArticleStore();
+const slug = useArticleSlug();
 
 const comment = ref(props.content || null);
 const errors = ref({});
 
 const userImageSrc = computed(() => props.userImage || "/default-avatar.svg");
 
-const onSubmit = (slug, body) => {
+const onSubmit = (articleSlug, body) => {
   articleStore
-    .createComment({ slug, comment: body })
+    .createComment({ slug: articleSlug, comment: body })
     .then(() => {
       comment.value = null;
       errors.value = {};
